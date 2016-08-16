@@ -12,5 +12,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="com.github.kevinsawicki:http-request:6.0" level="project" />
+    <orderEntry type="library" name="org.json:json:20160810" level="project" />
   </component>
 </module>
