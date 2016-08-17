@@ -7,6 +7,8 @@ import org.json.JSONObject;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-15.
@@ -16,7 +18,7 @@ public class MoulinetteApplication {
 
     private MoulinetteApplication(int width, int height)
     {
-        JFrame window = new JFrame();
+        /*JFrame window = new JFrame();
         window.setSize(width, height);
 
         JButton b=new JButton("click");//creating instance of JButton
@@ -27,7 +29,16 @@ public class MoulinetteApplication {
 
         window.setLayout(null);
         window.setVisible(true);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
+
+        File file = new File("/home/arachnid92/Downloads/test/Main.java");
+        try {
+            ProgramRunner pr = new ProgramRunner(file, "/usr/bin");
+            pr.compile();
+            System.out.print(pr.run("multi\nline\necho\n"));
+        } catch (IOException | ProgramRunner.ExecutionError | ProgramRunner.ProgramNotCompiled | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String [] args)
