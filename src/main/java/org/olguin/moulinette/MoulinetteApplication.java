@@ -33,7 +33,7 @@ public class MoulinetteApplication {
         window.setVisible(true);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
 
-        JFileChooser fc = new JFileChooser();
+/*        JFileChooser fc = new JFileChooser();
         int retVal = fc.showDialog(new JFrame(), null);
         if(retVal != JFileChooser.APPROVE_OPTION) System.exit(1);
 
@@ -44,26 +44,13 @@ public class MoulinetteApplication {
             System.out.print(pr.run("multi\nline\necho\n", 3, TimeUnit.SECONDS));
         } catch (IOException | ProgramRunner.ExecutionError | ProgramRunner.ProgramNotCompiled | InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
+
+        MoulinetteServerManager serverManager = new MoulinetteServerManager();
+
     }
 
-    public static void main(String [] args)
-    {
+    public static void main(String [] args) {
         new MoulinetteApplication(800, 600);
-    }
-
-    private class ButtonActionListener implements ActionListener
-    {
-
-        public void actionPerformed(ActionEvent e) {
-            String response = HttpRequest.get("https://moulinetteweb.herokuapp.com/api/v1/homeworks").body();
-            JSONObject obj = new JSONObject(response);
-            int len = obj.getInt("len");
-            JSONArray arr = obj.getJSONArray("result");
-
-
-            System.out.println(len);
-            System.out.println(arr);
-        }
     }
 }
