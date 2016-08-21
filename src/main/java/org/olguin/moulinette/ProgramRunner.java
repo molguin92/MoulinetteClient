@@ -36,9 +36,9 @@ public class ProgramRunner {
 
             String src = "";
             for(File f: sources)
-                src += this.pathtofolder + "/" + f.getName() + " ";
+                src += this.pathtofolder + File.separator + f.getName() + " ";
 
-            Process compproc = Runtime.getRuntime().exec(this.pathtojava + "/javac " + src);
+            Process compproc = Runtime.getRuntime().exec(this.pathtojava + File.separator + "javac " + src);
             BufferedInputStream stderr = new BufferedInputStream(compproc.getErrorStream());
             compproc.waitFor(10, TimeUnit.SECONDS);
 
@@ -50,9 +50,13 @@ public class ProgramRunner {
                     err += line + "\n";
                 }
 
+                stderr.close();
+                reader.close();
+
                 throw new CompileError(err);
             }
 
+            stderr.close();
             compiled = true;
 
         } catch (IOException | InterruptedException e) {
@@ -64,12 +68,12 @@ public class ProgramRunner {
     }
 
 
-    public String run(String test_input) throws ProgramNotCompiled, IOException, InterruptedException, ExecutionError {
+    public String run(String test_input, int timeout, TimeUnit timeUnit) throws ProgramNotCompiled, IOException, InterruptedException, ExecutionError {
         if (!compiled) {
             throw new ProgramNotCompiled();
         }
 
-        Process proc = Runtime.getRuntime().exec(this.pathtojava + "/java "
+        Process proc = Runtime.getRuntime().exec(this.pathtojava + File.separator + "java "
                 + "-classpath " + this.pathtofolder
                 + " " + this.mainclassname);
         BufferedInputStream stderr_stream = new BufferedInputStream(proc.getErrorStream());
@@ -84,7 +88,7 @@ public class ProgramRunner {
         stdin.flush();
         stdin.close(); // <-- EOF
 
-        proc.waitFor(3, TimeUnit.SECONDS);
+        proc.waitFor(timeout, timeUnit);
 
         if (proc.exitValue() != 0) {
             String line;
@@ -99,6 +103,14 @@ public class ProgramRunner {
         {
             out += line + "\n";
         }
+
+        stderr.close();
+        stderr_stream.close();
+
+        stdout.close();
+        stdout_stream.close();
+
+        stdin_stream.close();
 
         return out;
     }

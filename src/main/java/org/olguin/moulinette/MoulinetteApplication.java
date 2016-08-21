@@ -5,10 +5,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-15.
@@ -31,11 +33,15 @@ public class MoulinetteApplication {
         window.setVisible(true);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
 
-        File file = new File("/home/arachnid92/Downloads/test/Main.java");
+        JFileChooser fc = new JFileChooser();
+        int retVal = fc.showDialog(new JFrame(), null);
+        if(retVal != JFileChooser.APPROVE_OPTION) System.exit(1);
+
+        File file = fc.getSelectedFile();
         try {
             ProgramRunner pr = new ProgramRunner(file, "/usr/bin");
             pr.compile();
-            System.out.print(pr.run("multi\nline\necho\n"));
+            System.out.print(pr.run("multi\nline\necho\n", 3, TimeUnit.SECONDS));
         } catch (IOException | ProgramRunner.ExecutionError | ProgramRunner.ProgramNotCompiled | InterruptedException e) {
             e.printStackTrace();
         }
