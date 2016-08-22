@@ -61,6 +61,8 @@ public class MoulinetteApplication extends JFrame {
             mainclass = selectMainClass();
             if (mainclass != null)
                 pchoose.setText(mainclass.getName());
+            else
+                pchoose.setText("Browse...");
         });
         prun.addActionListener(e -> this.runProgram());
         bpanel.add(refresh);
