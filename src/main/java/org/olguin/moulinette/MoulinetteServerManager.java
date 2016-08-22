@@ -1,4 +1,5 @@
 package org.olguin.moulinette;
+
 import com.github.kevinsawicki.http.HttpRequest;
 import org.json.*;
 import org.olguin.moulinette.homework.Homework;
@@ -16,18 +17,12 @@ public class MoulinetteServerManager {
     private String serveruri = "https://moulinetteweb.herokuapp.com/api/v1/";
     private List<Homework> homeworks;
 
-    public MoulinetteServerManager()
-    {
-        this.updateHomeworks();
-    }
-
-    public void updateHomeworks()
-    {
-        this.homeworks = new ArrayList<>(10);
-        String res = HttpRequest.get(this.serveruri + "homeworks").body();
+    public void updateHomeworks() {
+        System.err.println("Updating homeworks...");
+        homeworks = new ArrayList<>(10);
+        String res = HttpRequest.get(serveruri + "homeworks").body();
         JSONArray hws = new JSONObject(res).getJSONArray("result");
-        for(Object o: hws)
-        {
+        for (Object o : hws) {
             JSONObject hw = (JSONObject) o;
             String id = hw.getString("id");
             String name = hw.getString("name");
@@ -35,8 +30,7 @@ public class MoulinetteServerManager {
             List<HomeworkItem> items = new ArrayList<>(3);
             JSONArray jitems = hw.getJSONArray("items");
 
-            for(Object o1: jitems)
-            {
+            for (Object o1 : jitems) {
                 JSONObject it = (JSONObject) o1;
                 HomeworkItem item = new HomeworkItem(
                         it.getString("id"),
@@ -45,8 +39,7 @@ public class MoulinetteServerManager {
                 );
 
                 JSONArray jtests = it.getJSONArray("tests");
-                for(Object o2: jtests)
-                {
+                for (Object o2 : jtests) {
                     JSONObject test = (JSONObject) o2;
                     item.addTest(test.getString("id"), test.getString("input"));
                 }
@@ -54,8 +47,15 @@ public class MoulinetteServerManager {
                 items.add(item);
             }
 
-            this.homeworks.add(new Homework(id, name, description, items));
+            Homework homework = new Homework(id, name, description, items);
+            homeworks.add(homework);
         }
+
+        System.err.println("Done updating!");
     }
 
+    public List<Homework> getHomeworks()
+    {
+        return this.homeworks;
+    }
 }

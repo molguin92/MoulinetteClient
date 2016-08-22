@@ -1,52 +1,96 @@
 package org.olguin.moulinette;
 
-import com.github.kevinsawicki.http.HttpRequest;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.olguin.moulinette.homework.Homework;
+import org.olguin.moulinette.homework.HomeworkItem;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-15.
  * Part of org.olguin.moulinette.
  */
-public class MoulinetteApplication {
+public class MoulinetteApplication extends JFrame {
+
+    private MoulinetteServerManager serverManager;
+    private JComboBox hwbox;
+    private JComboBox itembox;
+    private TextArea textArea;
+    private static String linebreak = System.getProperty("line.separator");
 
     private MoulinetteApplication(int width, int height)
     {
-        /*JFrame window = new JFrame();
-        window.setSize(width, height);
+        super("Moulinette");
+        this.setSize(width, height);
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        JPanel desktopPane = new JPanel();
+        desktopPane.setLayout(new BoxLayout(desktopPane, BoxLayout.PAGE_AXIS));
 
-        JButton b=new JButton("click");//creating instance of JButton
-        b.setBounds(width/2 - 50,height/2 - 20,100, 40);//x axis, y axis, width, height
-        b.addActionListener(new ButtonActionListener());
+        JPanel bpanel = new JPanel(new FlowLayout());
+        Button refresh = new Button("Refresh");
+        refresh.addActionListener(e -> this.updateHomeworks());
+        bpanel.add(refresh);
 
-        window.add(b);//adding button in JFrame
+        hwbox = new JComboBox();
+        hwbox.addActionListener(e -> this.selectHomework());
+        itembox = new JComboBox();
 
-        window.setLayout(null);
-        window.setVisible(true);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
+        desktopPane.add(bpanel);
+        desktopPane.add(hwbox);
+        desktopPane.add(itembox);
 
-/*        JFileChooser fc = new JFileChooser();
-        int retVal = fc.showDialog(new JFrame(), null);
-        if(retVal != JFileChooser.APPROVE_OPTION) System.exit(1);
+        JPanel tpanel = new JPanel(new BorderLayout());
+        textArea = new TextArea();
+        textArea.setEditable(false);
+        tpanel.add(textArea);
+        desktopPane.add(tpanel);
 
-        File file = fc.getSelectedFile();
+        this.add(desktopPane);
+
+        serverManager = new MoulinetteServerManager();
+        this.setVisible(true);
+        this.updateHomeworks();
+
+    }
+
+    private void updateHomeworks()
+    {
+        JDialog dialog = new JDialog(this, "Updating...", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.add(new Label("Updating homework assignments, please wait..."));
+        dialog.pack();
+        dialog.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+        Thread dt = new Thread(() ->
+        {
+            dialog.setLocationRelativeTo(this);
+            serverManager.updateHomeworks();
+            java.util.List<Homework> homeworks = serverManager.getHomeworks();
+            hwbox.removeAllItems();
+            for(Homework homework: homeworks)
+                if(homework != null) hwbox.addItem(homework);
+
+            dialog.setVisible(false);
+        });
+        dt.start();
+        dialog.setVisible(true);
+
         try {
-            ProgramRunner pr = new ProgramRunner(file, "/usr/bin");
-            pr.compile();
-            System.out.print(pr.run("multi\nline\necho\n", 3, TimeUnit.SECONDS));
-        } catch (IOException | ProgramRunner.ExecutionError | ProgramRunner.ProgramNotCompiled | InterruptedException e) {
+            dt.join();
+        } catch (InterruptedException e) {
             e.printStackTrace();
-        }*/
+        }
 
-        MoulinetteServerManager serverManager = new MoulinetteServerManager();
+    }
+
+    private void selectHomework()
+    {
+        Homework selected = (Homework) hwbox.getSelectedItem();
+        itembox.removeAllItems();
+        if(selected != null) {
+            for (HomeworkItem item : selected.getItems())
+                if (item != null) itembox.addItem(item);
+        }
 
     }
 
