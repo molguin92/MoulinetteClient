@@ -1,10 +1,10 @@
 package org.olguin.moulinette;
 
-import javafx.stage.FileChooser;
 import org.olguin.moulinette.homework.Homework;
 import org.olguin.moulinette.homework.HomeworkItem;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
@@ -28,7 +28,7 @@ public class MoulinetteApplication extends JFrame {
     private JComboBox itembox;
     private JLabel hwlabel;
     private JLabel itemlabel;
-    private JTextPane textArea;
+    private JTextPane textPane;
     private static String linebreak = System.getProperty("line.separator");
     private final JPanel mainPanel;
     private Map<String, String> tests;
@@ -80,14 +80,17 @@ public class MoulinetteApplication extends JFrame {
         mainPanel.add(itemlabel);
 
         JPanel tpanel = new JPanel(new BorderLayout());
-        tpanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
-        textArea = new JTextPane();
-        textArea.setEditable(false);
-        textArea.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
-        textArea.setMargin(new Insets(3, 3, 3, 3));
-        doc = textArea.getStyledDocument();
-        tpanel.add(textArea);
-        mainPanel.add(tpanel);
+        JPanel auxpanel = new JPanel(new BorderLayout());
+        auxpanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+        tpanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+        textPane = new JTextPane();
+        textPane.setEditable(false);
+        textPane.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+        textPane.setMargin(new Insets(1, 1, 1, 1));
+        doc = textPane.getStyledDocument();
+        tpanel.add(textPane);
+        auxpanel.add(tpanel);
+        mainPanel.add(auxpanel);
 
         errorstyle = new SimpleAttributeSet();
         StyleConstants.setForeground(errorstyle, Color.RED);
@@ -108,7 +111,10 @@ public class MoulinetteApplication extends JFrame {
     private void updateHomeworks() {
         JDialog dialog = new JDialog(this, "Updating...", true);
         dialog.setLayout(new BorderLayout());
-        dialog.add(new JLabel("Updating homework assignments, please wait..."));
+        JPanel dpanel = new JPanel(new BorderLayout());
+        dpanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
+        dpanel.add(new JLabel("Updating homework assignments, please wait..."));
+        dialog.add(dpanel);
         dialog.pack();
         dialog.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
@@ -185,7 +191,10 @@ public class MoulinetteApplication extends JFrame {
         if(mainclass == null)
         {
             JDialog errordialog = new JDialog(this, "Error", true);
-            errordialog.add(new JLabel("Error: Please select a program to test."));
+            JPanel dpanel = new JPanel(new BorderLayout());
+            dpanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
+            errordialog.add(dpanel);
+            dpanel.add(new JLabel("Error: Please select a program to test."));
             errordialog.pack();
             errordialog.setLocationRelativeTo(this);
             errordialog.setVisible(true);
