@@ -107,11 +107,13 @@ public class MoulinetteApplication extends JFrame {
         hwdescription = new JTextArea(3, 50);
         hwdescription.setAutoscrolls(true);
         hwdescription.setEditable(false);
+        hwdescription.setLineWrap(true);
         JScrollPane hwscroll = new JScrollPane(hwdescription);
         hwscroll.setAutoscrolls(true);
         itemdescription = new JTextArea(3, 50);
         itemdescription.setAutoscrolls(true);
         itemdescription.setEditable(false);
+        itemdescription.setLineWrap(true);
         JScrollPane itemscroll = new JScrollPane(itemdescription);
         itemscroll.setAutoscrolls(true);
 
