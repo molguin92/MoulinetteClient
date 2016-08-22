@@ -25,17 +25,12 @@ import java.util.concurrent.TimeUnit;
 public class MoulinetteApplication extends JFrame {
 
     private static String linebreak = System.getProperty("line.separator");
-    private final JPanel mainPanel;
-    private final JPanel topPanel;
     private final JButton refresh;
     private final JButton pchoose;
     private final JButton prun;
     private MoulinetteServerManager serverManager;
     private JComboBox hwbox;
     private JComboBox itembox;
-    private JLabel hwlabel;
-    private JLabel itemlabel;
-    private JTextPane textPane;
     private Map<String, String> tests;
     private File mainclass;
     private StyledDocument doc;
@@ -50,10 +45,10 @@ public class MoulinetteApplication extends JFrame {
         this.setSize(width, height);
         this.setResizable(false);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        mainPanel = new JPanel();
+        JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
         mainPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
-        topPanel = new JPanel();
+        JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
 
         JPanel bpanel = new JPanel(new FlowLayout());
@@ -93,8 +88,8 @@ public class MoulinetteApplication extends JFrame {
         itemboxpanel.add(itemboxlabel);
         itemboxpanel.add(itembox);
 
-        hwlabel = new JLabel("Description: ");
-        itemlabel = new JLabel("Description: ");
+        JLabel hwlabel = new JLabel("Description: ");
+        JLabel itemlabel = new JLabel("Description: ");
         hwlabel.setPreferredSize(new Dimension(110, 10));
         itemlabel.setPreferredSize(new Dimension(110, 10));
 
@@ -140,7 +135,7 @@ public class MoulinetteApplication extends JFrame {
         JPanel auxpanel = new JPanel(new BorderLayout());
         auxpanel.setBorder(new EmptyBorder(new Insets(10, 0, 0, 0)));
         tpanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
-        textPane = new JTextPane();
+        JTextPane textPane = new JTextPane();
         textPane.setEditable(false);
         textPane.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
         textPane.setMargin(new Insets(1, 1, 1, 1));
