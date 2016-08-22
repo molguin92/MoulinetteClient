@@ -91,6 +91,7 @@ public class MoulinetteApplication extends JFrame {
 
         errorstyle = new SimpleAttributeSet();
         StyleConstants.setForeground(errorstyle, Color.RED);
+        StyleConstants.setBold(errorstyle, true);
 
         correctstyle = new SimpleAttributeSet();
         StyleConstants.setForeground(correctstyle, Color.GREEN);
@@ -210,8 +211,13 @@ public class MoulinetteApplication extends JFrame {
                 {
                     doc.insertString(doc.getLength(), "Test " + testcnt + "...\t", null);
                     String result = pr.run(tests.get(test), 3, TimeUnit.SECONDS);
-                    boolean res = serverManager.validateTestOutput(test, result);
-                    doc.insertString(doc.getLength(), (res ? "Correct ✓" : "Incorrect ✗") + linebreak, correctstyle);
+
+                    try {
+                        serverManager.validateTestOutput(test, result);
+                        doc.insertString(doc.getLength(), "Correct ✓" + linebreak, correctstyle);
+                    } catch (MoulinetteServerManager.WrongResult wrongResult) {
+                        doc.insertString(doc.getLength(), "Incorrect ✗: " + wrongResult.error + linebreak, errorstyle);
+                    }
                     testcnt++;
                 }
             } catch (IOException e) {
@@ -223,7 +229,11 @@ public class MoulinetteApplication extends JFrame {
             } catch (ProgramRunner.ProgramNotCompiled programNotCompiled) {
                 programNotCompiled.printStackTrace();
             } catch (ProgramRunner.CompileError compileError) {
-
+                try {
+                    doc.insertString(doc.getLength(), linebreak + compileError.stderr + linebreak, errorstyle);
+                } catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
             } catch (BadLocationException e) {
                 e.printStackTrace();
             }

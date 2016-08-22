@@ -56,17 +56,24 @@ public class MoulinetteServerManager {
         System.err.println("Done updating!");
     }
 
-    public boolean validateTestOutput(String testid, String output)
-    {
+    public void validateTestOutput(String testid, String output) throws WrongResult {
         HttpRequest res = HttpRequest.post(serveruri + "validate_test", true, "id", testid, "output", output + "\n");
-        int result = res.code();
-        System.err.println(res.body());
-
-        return result == 200;
+        JSONObject result = new JSONObject(res.body());
+        if(!result.getBoolean("result_ok"))
+            throw new WrongResult(result.getString("error"));
     }
 
     public List<Homework> getHomeworks()
     {
         return this.homeworks;
+    }
+
+    public class WrongResult extends Exception
+    {
+        public String error;
+        public WrongResult(String error)
+        {
+            this.error = error;
+        }
     }
 }
