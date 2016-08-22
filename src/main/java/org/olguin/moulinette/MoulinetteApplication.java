@@ -15,16 +15,19 @@ public class MoulinetteApplication extends JFrame {
     private MoulinetteServerManager serverManager;
     private JComboBox hwbox;
     private JComboBox itembox;
-    private TextArea textArea;
+    private JLabel hwlabel;
+    private JLabel itemlabel;
+    private JTextArea textArea;
     private static String linebreak = System.getProperty("line.separator");
+    private final JPanel mainPanel;
 
     private MoulinetteApplication(int width, int height)
     {
         super("Moulinette");
         this.setSize(width, height);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        JPanel desktopPane = new JPanel();
-        desktopPane.setLayout(new BoxLayout(desktopPane, BoxLayout.PAGE_AXIS));
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
 
         JPanel bpanel = new JPanel(new FlowLayout());
         Button refresh = new Button("Refresh");
@@ -35,17 +38,23 @@ public class MoulinetteApplication extends JFrame {
         hwbox.addActionListener(e -> this.selectHomework());
         itembox = new JComboBox();
 
-        desktopPane.add(bpanel);
-        desktopPane.add(hwbox);
-        desktopPane.add(itembox);
+        hwlabel = new JLabel();
+        itemlabel = new JLabel();
+
+        mainPanel.add(bpanel);
+        mainPanel.add(hwbox);
+        mainPanel.add(hwlabel);
+        mainPanel.add(itembox);
+        mainPanel.add(itemlabel);
 
         JPanel tpanel = new JPanel(new BorderLayout());
-        textArea = new TextArea();
+        textArea = new JTextArea();
         textArea.setEditable(false);
+        textArea.setLineWrap(false);
         tpanel.add(textArea);
-        desktopPane.add(tpanel);
+        mainPanel.add(tpanel);
 
-        this.add(desktopPane);
+        this.add(mainPanel);
 
         serverManager = new MoulinetteServerManager();
         this.setVisible(true);
@@ -90,6 +99,8 @@ public class MoulinetteApplication extends JFrame {
         if(selected != null) {
             for (HomeworkItem item : selected.getItems())
                 if (item != null) itembox.addItem(item);
+            hwlabel.setText("Description: " + selected.getDescription() + linebreak);
+            hwlabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         }
 
     }
