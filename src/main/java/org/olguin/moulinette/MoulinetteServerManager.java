@@ -6,7 +6,9 @@ import org.olguin.moulinette.homework.Homework;
 import org.olguin.moulinette.homework.HomeworkItem;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-21.
@@ -52,6 +54,15 @@ public class MoulinetteServerManager {
         }
 
         System.err.println("Done updating!");
+    }
+
+    public boolean validateTestOutput(String testid, String output)
+    {
+        HttpRequest res = HttpRequest.post(serveruri + "validate_test", true, "id", testid, "output", output + "\n");
+        int result = res.code();
+        System.err.println(res.body());
+
+        return result == 200;
     }
 
     public List<Homework> getHomeworks()
