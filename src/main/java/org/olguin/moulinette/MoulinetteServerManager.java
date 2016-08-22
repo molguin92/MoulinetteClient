@@ -1,14 +1,14 @@
 package org.olguin.moulinette;
 
 import com.github.kevinsawicki.http.HttpRequest;
-import org.json.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.olguin.moulinette.homework.Homework;
 import org.olguin.moulinette.homework.HomeworkItem;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-21.
@@ -58,6 +58,10 @@ public class MoulinetteServerManager {
 
     public void validateTestOutput(String testid, String output) throws WrongResult {
         HttpRequest res = HttpRequest.post(serveruri + "validate_test", true, "id", testid, "output", output + "\n");
+
+        if(res.notFound() || res.badRequest())
+            throw new HttpRequest.HttpRequestException(new IOException());
+
         JSONObject result = new JSONObject(res.body());
         if(!result.getBoolean("result_ok"))
             throw new WrongResult(result.getString("error"));

@@ -1,5 +1,6 @@
 package org.olguin.moulinette;
 
+import com.github.kevinsawicki.http.HttpRequest;
 import org.olguin.moulinette.homework.Homework;
 import org.olguin.moulinette.homework.HomeworkItem;
 
@@ -23,23 +24,26 @@ import java.util.concurrent.TimeUnit;
  */
 public class MoulinetteApplication extends JFrame {
 
+    private static String linebreak = System.getProperty("line.separator");
+    private final JPanel mainPanel;
+    private final JPanel topPanel;
+    private final JButton refresh;
+    private final JButton pchoose;
+    private final JButton prun;
     private MoulinetteServerManager serverManager;
     private JComboBox hwbox;
     private JComboBox itembox;
     private JLabel hwlabel;
     private JLabel itemlabel;
     private JTextPane textPane;
-    private static String linebreak = System.getProperty("line.separator");
-    private final JPanel mainPanel;
     private Map<String, String> tests;
     private File mainclass;
-    private final JButton refresh;
-    private final JButton pchoose;
-    private final JButton prun;
-
     private StyledDocument doc;
     private SimpleAttributeSet errorstyle;
     private SimpleAttributeSet correctstyle;
+
+    private JTextArea hwdescription;
+    private JTextArea itemdescription;
 
     private MoulinetteApplication(int width, int height) {
         super("Moulinette");
@@ -48,6 +52,9 @@ public class MoulinetteApplication extends JFrame {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
+        mainPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+        topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
 
         JPanel bpanel = new JPanel(new FlowLayout());
         refresh = new JButton("Refresh");
@@ -57,7 +64,7 @@ public class MoulinetteApplication extends JFrame {
         refresh.addActionListener(e -> this.updateHomeworks());
         pchoose.addActionListener(e -> {
             mainclass = selectMainClass();
-            if(mainclass != null)
+            if (mainclass != null)
                 pchoose.setText(mainclass.getName());
         });
         prun.addActionListener(e -> this.runProgram());
@@ -67,30 +74,82 @@ public class MoulinetteApplication extends JFrame {
 
         hwbox = new JComboBox();
         hwbox.addActionListener(e -> this.selectHomework());
+        JLabel hwboxlabel = new JLabel("Homework: ");
+        hwboxlabel.setPreferredSize(new Dimension(110, 10));
+
         itembox = new JComboBox();
         itembox.addActionListener(e -> this.selectHomeworkItem());
+        JLabel itemboxlabel = new JLabel("Item: ");
+        itemboxlabel.setPreferredSize(new Dimension(110, 10));
 
-        hwlabel = new JLabel();
-        itemlabel = new JLabel();
 
-        mainPanel.add(bpanel);
-        mainPanel.add(hwbox);
-        mainPanel.add(hwlabel);
-        mainPanel.add(itembox);
-        mainPanel.add(itemlabel);
+        JPanel hboxpanel = new JPanel();
+        hboxpanel.setLayout(new BoxLayout(hboxpanel, BoxLayout.X_AXIS));
+        hboxpanel.add(hwboxlabel);
+        hboxpanel.add(hwbox);
+
+        JPanel itemboxpanel = new JPanel();
+        itemboxpanel.setLayout(new BoxLayout(itemboxpanel, BoxLayout.X_AXIS));
+        itemboxpanel.add(itemboxlabel);
+        itemboxpanel.add(itembox);
+
+        hwlabel = new JLabel("Description: ");
+        itemlabel = new JLabel("Description: ");
+        hwlabel.setPreferredSize(new Dimension(110, 10));
+        itemlabel.setPreferredSize(new Dimension(110, 10));
+
+        JPanel hwlabelpanel = new JPanel();
+        hwlabelpanel.setLayout(new BoxLayout(hwlabelpanel, BoxLayout.X_AXIS));
+        hwlabelpanel.setBorder(new EmptyBorder(new Insets(5, 0, 5, 0)));
+
+        JPanel itemlabelpanel = new JPanel();
+        itemlabelpanel.setLayout(new BoxLayout(itemlabelpanel, BoxLayout.X_AXIS));
+        itemlabelpanel.setBorder(new EmptyBorder(new Insets(5, 0, 5, 0)));
+
+        hwlabelpanel.add(hwlabel);
+        itemlabelpanel.add(itemlabel);
+
+        hwdescription = new JTextArea(3, 50);
+        hwdescription.setAutoscrolls(true);
+        hwdescription.setEditable(false);
+        JScrollPane hwscroll = new JScrollPane(hwdescription);
+        hwscroll.setAutoscrolls(true);
+        itemdescription = new JTextArea(3, 50);
+        itemdescription.setAutoscrolls(true);
+        itemdescription.setEditable(false);
+        JScrollPane itemscroll = new JScrollPane(itemdescription);
+        itemscroll.setAutoscrolls(true);
+
+        hwlabelpanel.add(hwscroll);
+        itemlabelpanel.add(itemscroll);
+
+        topPanel.add(bpanel);
+
+        JPanel boxpanel = new JPanel();
+        boxpanel.setLayout(new BoxLayout(boxpanel, BoxLayout.Y_AXIS));
+
+        boxpanel.add(hboxpanel);
+        boxpanel.add(hwlabelpanel);
+        boxpanel.add(itemboxpanel);
+        boxpanel.add(itemlabelpanel);
+
+        topPanel.add(boxpanel);
+
 
         JPanel tpanel = new JPanel(new BorderLayout());
         JPanel auxpanel = new JPanel(new BorderLayout());
-        auxpanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+        auxpanel.setBorder(new EmptyBorder(new Insets(10, 0, 0, 0)));
         tpanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
         textPane = new JTextPane();
         textPane.setEditable(false);
         textPane.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
         textPane.setMargin(new Insets(1, 1, 1, 1));
+        textPane.setAutoscrolls(true);
         doc = textPane.getStyledDocument();
-        tpanel.add(textPane);
+        JScrollPane textscroll = new JScrollPane(textPane);
+        textscroll.setAutoscrolls(true);
+        tpanel.add(textscroll);
         auxpanel.add(tpanel);
-        mainPanel.add(auxpanel);
 
         errorstyle = new SimpleAttributeSet();
         StyleConstants.setForeground(errorstyle, Color.RED);
@@ -100,6 +159,9 @@ public class MoulinetteApplication extends JFrame {
         StyleConstants.setForeground(correctstyle, Color.GREEN);
         StyleConstants.setBold(correctstyle, true);
 
+
+        mainPanel.add(topPanel);
+        mainPanel.add(auxpanel);
         this.add(mainPanel);
 
         serverManager = new MoulinetteServerManager();
@@ -140,27 +202,6 @@ public class MoulinetteApplication extends JFrame {
 
     }
 
-    private void selectHomework() {
-        Homework selected = (Homework) hwbox.getSelectedItem();
-        itembox.removeAllItems();
-        if (selected != null) {
-            for (HomeworkItem item : selected.getItems())
-                if (item != null) itembox.addItem(item);
-            hwlabel.setText("Description: " + selected.getDescription() + linebreak);
-            hwlabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        }
-
-    }
-
-    private void selectHomeworkItem() {
-        HomeworkItem selected = (HomeworkItem) itembox.getSelectedItem();
-        if (selected != null) {
-            itemlabel.setText("Description: " + selected.getDescription() + linebreak);
-            itemlabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            tests = selected.getTests();
-        }
-    }
-
     private File selectMainClass() {
         JFileChooser fc = new JFileChooser();
         fc.setFileFilter(new FileFilter() {
@@ -186,10 +227,8 @@ public class MoulinetteApplication extends JFrame {
         return null;
     }
 
-    private void runProgram()
-    {
-        if(mainclass == null)
-        {
+    private void runProgram() {
+        if (mainclass == null) {
             JDialog errordialog = new JDialog(this, "Error", true);
             JPanel dpanel = new JPanel(new BorderLayout());
             dpanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
@@ -216,8 +255,7 @@ public class MoulinetteApplication extends JFrame {
                 doc.insertString(doc.getLength(), "Done." + linebreak, null);
                 doc.insertString(doc.getLength(), "Verifying results..." + linebreak, null);
                 int testcnt = 1;
-                for(String test: tests.keySet())
-                {
+                for (String test : tests.keySet()) {
                     doc.insertString(doc.getLength(), "Test " + testcnt + "...\t", null);
                     String result = pr.run(tests.get(test), 3, TimeUnit.SECONDS);
 
@@ -226,25 +264,26 @@ public class MoulinetteApplication extends JFrame {
                         doc.insertString(doc.getLength(), "Correct ✓" + linebreak, correctstyle);
                     } catch (MoulinetteServerManager.WrongResult wrongResult) {
                         doc.insertString(doc.getLength(), "Incorrect ✗: " + wrongResult.error + linebreak, errorstyle);
+                    } catch (HttpRequest.HttpRequestException e) {
+                        doc.insertString(doc.getLength(), linebreak + "Error when contacting server. Please retry or refresh the application." + linebreak, errorstyle);
+                        return;
                     }
                     testcnt++;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException | ProgramRunner.ProgramNotCompiled | BadLocationException e) {
                 e.printStackTrace();
             } catch (ProgramRunner.ExecutionError executionError) {
-                executionError.printStackTrace();
-            } catch (ProgramRunner.ProgramNotCompiled programNotCompiled) {
-                programNotCompiled.printStackTrace();
+                try {
+                    doc.insertString(doc.getLength(), linebreak + "Error when executing " + mainclass.getName() + linebreak, errorstyle);
+                } catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
             } catch (ProgramRunner.CompileError compileError) {
                 try {
                     doc.insertString(doc.getLength(), linebreak + compileError.stderr + linebreak, errorstyle);
                 } catch (BadLocationException e) {
                     e.printStackTrace();
                 }
-            } catch (BadLocationException e) {
-                e.printStackTrace();
             }
 
             refresh.setEnabled(true);
@@ -256,6 +295,25 @@ public class MoulinetteApplication extends JFrame {
         });
 
         t.start();
+    }
+
+    private void selectHomework() {
+        Homework selected = (Homework) hwbox.getSelectedItem();
+        itembox.removeAllItems();
+        if (selected != null) {
+            for (HomeworkItem item : selected.getItems())
+                if (item != null) itembox.addItem(item);
+            hwdescription.setText(selected.getDescription() + linebreak);
+        }
+
+    }
+
+    private void selectHomeworkItem() {
+        HomeworkItem selected = (HomeworkItem) itembox.getSelectedItem();
+        if (selected != null) {
+            itemdescription.setText(selected.getDescription() + linebreak);
+            tests = selected.getTests();
+        }
     }
 
     public static void main(String[] args) {
