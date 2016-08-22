@@ -8,13 +8,11 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +34,7 @@ public class MoulinetteApplication extends JFrame {
     private StyledDocument doc;
     private SimpleAttributeSet errorstyle;
     private SimpleAttributeSet correctstyle;
+    private SimpleAttributeSet infostyle;
 
     private JTextArea hwdescription;
     private JTextArea itemdescription;
@@ -107,17 +106,13 @@ public class MoulinetteApplication extends JFrame {
         itemlabelpanel.add(itemlabel);
 
         hwdescription = new JTextArea(3, 50);
-        hwdescription.setAutoscrolls(true);
         hwdescription.setEditable(false);
         hwdescription.setLineWrap(true);
         JScrollPane hwscroll = new JScrollPane(hwdescription);
-        hwscroll.setAutoscrolls(true);
         itemdescription = new JTextArea(3, 50);
-        itemdescription.setAutoscrolls(true);
         itemdescription.setEditable(false);
         itemdescription.setLineWrap(true);
         JScrollPane itemscroll = new JScrollPane(itemdescription);
-        itemscroll.setAutoscrolls(true);
 
         hwlabelpanel.add(hwscroll);
         itemlabelpanel.add(itemscroll);
@@ -143,10 +138,13 @@ public class MoulinetteApplication extends JFrame {
         textPane.setEditable(false);
         textPane.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
         textPane.setMargin(new Insets(1, 1, 1, 1));
-        textPane.setAutoscrolls(true);
         doc = textPane.getStyledDocument();
         JScrollPane textscroll = new JScrollPane(textPane);
         textscroll.setAutoscrolls(true);
+
+        DefaultCaret caret = (DefaultCaret) textPane.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
         tpanel.add(textscroll);
         auxpanel.add(tpanel);
 
@@ -157,6 +155,9 @@ public class MoulinetteApplication extends JFrame {
         correctstyle = new SimpleAttributeSet();
         StyleConstants.setForeground(correctstyle, Color.GREEN);
         StyleConstants.setBold(correctstyle, true);
+
+        infostyle = new SimpleAttributeSet();
+        StyleConstants.setBold(infostyle, true);
 
 
         mainPanel.add(topPanel);
@@ -248,6 +249,9 @@ public class MoulinetteApplication extends JFrame {
         Thread t = new Thread(() -> {
 
             try {
+                String ISOnow = LocalDateTime.now().toLocalTime().toString();
+                doc.insertString(doc.getLength(), "[" + ISOnow + "] ", infostyle);
+                doc.insertString(doc.getLength(), "Evaluating " + mainclass.getName() + linebreak, infostyle);
                 ProgramRunner pr = new ProgramRunner(mainclass, "/usr/bin");
                 doc.insertString(doc.getLength(), "Compiling... ", null);
                 pr.compile();
