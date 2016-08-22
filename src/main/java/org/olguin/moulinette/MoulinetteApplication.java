@@ -5,7 +5,12 @@ import org.olguin.moulinette.homework.Homework;
 import org.olguin.moulinette.homework.HomeworkItem;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +28,7 @@ public class MoulinetteApplication extends JFrame {
     private JComboBox itembox;
     private JLabel hwlabel;
     private JLabel itemlabel;
-    private JTextArea textArea;
+    private JTextPane textArea;
     private static String linebreak = System.getProperty("line.separator");
     private final JPanel mainPanel;
     private Map<String, String> tests;
@@ -31,6 +36,10 @@ public class MoulinetteApplication extends JFrame {
     private final JButton refresh;
     private final JButton pchoose;
     private final JButton prun;
+
+    private StyledDocument doc;
+    private SimpleAttributeSet errorstyle;
+    private SimpleAttributeSet correctstyle;
 
     private MoulinetteApplication(int width, int height) {
         super("Moulinette");
@@ -48,7 +57,8 @@ public class MoulinetteApplication extends JFrame {
         refresh.addActionListener(e -> this.updateHomeworks());
         pchoose.addActionListener(e -> {
             mainclass = selectMainClass();
-            pchoose.setText(mainclass.getName());
+            if(mainclass != null)
+                pchoose.setText(mainclass.getName());
         });
         prun.addActionListener(e -> this.runProgram());
         bpanel.add(refresh);
@@ -70,11 +80,21 @@ public class MoulinetteApplication extends JFrame {
         mainPanel.add(itemlabel);
 
         JPanel tpanel = new JPanel(new BorderLayout());
-        textArea = new JTextArea();
+        tpanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+        textArea = new JTextPane();
         textArea.setEditable(false);
-        textArea.setLineWrap(false);
+        textArea.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+        textArea.setMargin(new Insets(3, 3, 3, 3));
+        doc = textArea.getStyledDocument();
         tpanel.add(textArea);
         mainPanel.add(tpanel);
+
+        errorstyle = new SimpleAttributeSet();
+        StyleConstants.setForeground(errorstyle, Color.RED);
+
+        correctstyle = new SimpleAttributeSet();
+        StyleConstants.setForeground(correctstyle, Color.GREEN);
+        StyleConstants.setBold(correctstyle, true);
 
         this.add(mainPanel);
 
@@ -181,12 +201,18 @@ public class MoulinetteApplication extends JFrame {
 
             try {
                 ProgramRunner pr = new ProgramRunner(mainclass, "/usr/bin");
+                doc.insertString(doc.getLength(), "Compiling... ", null);
                 pr.compile();
+                doc.insertString(doc.getLength(), "Done." + linebreak, null);
+                doc.insertString(doc.getLength(), "Verifying results..." + linebreak, null);
+                int testcnt = 1;
                 for(String test: tests.keySet())
                 {
+                    doc.insertString(doc.getLength(), "Test " + testcnt + "...\t", null);
                     String result = pr.run(tests.get(test), 3, TimeUnit.SECONDS);
                     boolean res = serverManager.validateTestOutput(test, result);
-                    textArea.append((res ? "Correct" : "Incorrect") + linebreak);
+                    doc.insertString(doc.getLength(), (res ? "Correct ✓" : "Incorrect ✗") + linebreak, correctstyle);
+                    testcnt++;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -196,6 +222,10 @@ public class MoulinetteApplication extends JFrame {
                 executionError.printStackTrace();
             } catch (ProgramRunner.ProgramNotCompiled programNotCompiled) {
                 programNotCompiled.printStackTrace();
+            } catch (ProgramRunner.CompileError compileError) {
+
+            } catch (BadLocationException e) {
+                e.printStackTrace();
             }
 
             refresh.setEnabled(true);

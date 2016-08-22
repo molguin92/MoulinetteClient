@@ -26,44 +26,37 @@ public class ProgramRunner {
      * Compiles the program previous to running it. Sets the flag "compiled" to true if compilation was succesful.
      * If not, writes error to stderr.
      */
-    public void compile() {
-        try {
-            File folder = new File(this.pathtofolder);
-            File[] sources = folder.listFiles(pathname -> {
-                String name = pathname.getName();
-                return name.substring(name.lastIndexOf('.')).equals(".java");
-            });
+    public void compile() throws InterruptedException, IOException, CompileError {
+        File folder = new File(this.pathtofolder);
+        File[] sources = folder.listFiles(pathname -> {
+            String name = pathname.getName();
+            return name.substring(name.lastIndexOf('.')).equals(".java");
+        });
 
-            String src = "";
-            for(File f: sources)
-                src += this.pathtofolder + File.separator + f.getName() + " ";
+        String src = "";
+        for (File f : sources)
+            src += this.pathtofolder + File.separator + f.getName() + " ";
 
-            Process compproc = Runtime.getRuntime().exec(this.pathtojava + File.separator + "javac " + src);
-            BufferedInputStream stderr = new BufferedInputStream(compproc.getErrorStream());
-            compproc.waitFor(10, TimeUnit.SECONDS);
+        Process compproc = Runtime.getRuntime().exec(this.pathtojava + File.separator + "javac " + src);
+        BufferedInputStream stderr = new BufferedInputStream(compproc.getErrorStream());
+        compproc.waitFor(10, TimeUnit.SECONDS);
 
-            if (compproc.exitValue() != 0) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(stderr));
-                String err = "";
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    err += line + "\n";
-                }
-
-                stderr.close();
-                reader.close();
-
-                throw new CompileError(err);
+        if (compproc.exitValue() != 0) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stderr));
+            String err = "";
+            String line;
+            while ((line = reader.readLine()) != null) {
+                err += line + "\n";
             }
 
             stderr.close();
-            compiled = true;
+            reader.close();
 
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        } catch (CompileError compileError) {
-            System.err.print(compileError.stderr);
+            throw new CompileError(err);
         }
+
+        stderr.close();
+        compiled = true;
 
     }
 
@@ -92,15 +85,14 @@ public class ProgramRunner {
 
         if (proc.exitValue() != 0) {
             String line;
-            while((line = stderr.readLine()) != null)
+            while ((line = stderr.readLine()) != null)
                 System.err.println(line);
             throw new ExecutionError();
         }
 
         String out = "";
         String line;
-        while ((line = stdout.readLine()) != null)
-        {
+        while ((line = stdout.readLine()) != null) {
             out += line + "\n";
         }
 
