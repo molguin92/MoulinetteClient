@@ -42,6 +42,7 @@ public class MoulinetteApplication extends JFrame {
     private JTextArea itemdescription;
 
     private String java_home;
+    private final JTextField pfield;
 
 
     private MoulinetteApplication(int width, int height, Properties prop) {
@@ -58,23 +59,45 @@ public class MoulinetteApplication extends JFrame {
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
 
-        JPanel bpanel = new JPanel(new FlowLayout());
         refresh = new JButton("Refresh");
         pchoose = new JButton("Browse...");
         prun = new JButton("Run");
+
+        JPanel ppanel = new JPanel();
+        ppanel.setLayout(new BoxLayout(ppanel, BoxLayout.X_AXIS));
+        ppanel.setBorder(new EmptyBorder(new Insets(5, 0, 10, 0)));
+        JLabel plabel = new JLabel("Main class: ");
+        plabel.setPreferredSize(new Dimension(110, 10));
+        pfield = new JTextField();
+        pfield.setMaximumSize(new Dimension(Integer.MAX_VALUE, pchoose.getPreferredSize().height));
+        pfield.setEditable(false);
+
+        ((DefaultCaret) pfield.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
+        JPanel pfieldpanel = new JPanel();
+        pfieldpanel.setLayout(new BoxLayout(pfieldpanel, BoxLayout.X_AXIS));
+        pfieldpanel.setBorder(new EmptyBorder(new Insets(0, 5, 0, 5)));
+        pfieldpanel.add(pfield);
+
+        ppanel.add(plabel);
+        ppanel.add(pchoose);
+        ppanel.add(pfieldpanel);
+        ppanel.add(prun);
 
         refresh.addActionListener(e -> this.updateHomeworks());
         pchoose.addActionListener(e -> {
             mainclass = selectMainClass();
             if (mainclass != null)
-                pchoose.setText(mainclass.getName());
+                try {
+                    pfield.setText(mainclass.getCanonicalPath());
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             else
-                pchoose.setText("Browse...");
+                pfield.setText("");
         });
         prun.addActionListener(e -> this.runProgram());
-        bpanel.add(refresh);
-        bpanel.add(pchoose);
-        bpanel.add(prun);
+
 
         hwbox = new JComboBox();
         hwbox.addActionListener(e -> this.selectHomework());
@@ -125,17 +148,27 @@ public class MoulinetteApplication extends JFrame {
         hwlabelpanel.add(hwscroll);
         itemlabelpanel.add(itemscroll);
 
-        topPanel.add(bpanel);
-
         JPanel boxpanel = new JPanel();
         boxpanel.setLayout(new BoxLayout(boxpanel, BoxLayout.Y_AXIS));
+        boxpanel.setBorder(new EmptyBorder(new Insets(10, 0, 0, 0)));
 
         boxpanel.add(hboxpanel);
         boxpanel.add(hwlabelpanel);
         boxpanel.add(itemboxpanel);
         boxpanel.add(itemlabelpanel);
 
+        JPanel bpanel = new JPanel();
+        bpanel.setLayout(new BoxLayout(bpanel, BoxLayout.X_AXIS));
+        JSeparator spacer = new JSeparator();
+        spacer.setMaximumSize(new Dimension(Integer.MAX_VALUE, refresh.getHeight()));
+        bpanel.add(spacer);
+        bpanel.add(refresh);
+
+
+        topPanel.add(ppanel);
+        topPanel.add(new JSeparator());
         topPanel.add(boxpanel);
+        topPanel.add(bpanel);
 
 
         JPanel tpanel = new JPanel(new BorderLayout());
