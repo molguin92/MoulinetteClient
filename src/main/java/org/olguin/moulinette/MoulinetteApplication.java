@@ -12,8 +12,10 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,8 +44,8 @@ public class MoulinetteApplication extends JFrame {
     private String java_home;
 
 
-    private MoulinetteApplication(int width, int height) {
-        super("Moulinette");
+    private MoulinetteApplication(int width, int height, Properties prop) {
+        super("Moulinette v" + prop.getProperty("version"));
 
         java_home = System.getenv("JAVA_HOME");
 
@@ -325,7 +327,15 @@ public class MoulinetteApplication extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        new MoulinetteApplication(800, 600);
+    public static void main(String[] args) throws IOException {
+
+        InputStream resourceAsStream =
+                MoulinetteApplication.class.getResourceAsStream(
+                        "/version.properties"
+                );
+        Properties prop = new Properties();
+        prop.load(resourceAsStream);
+
+        new MoulinetteApplication(800, 600, prop);
     }
 }
