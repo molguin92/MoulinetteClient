@@ -39,8 +39,14 @@ public class MoulinetteApplication extends JFrame {
     private JTextArea hwdescription;
     private JTextArea itemdescription;
 
+    private String java_home;
+
+
     private MoulinetteApplication(int width, int height) {
         super("Moulinette");
+
+        java_home = System.getenv("JAVA_HOME");
+
         this.setSize(width, height);
         this.setResizable(false);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -252,7 +258,7 @@ public class MoulinetteApplication extends JFrame {
                 String ISOnow = LocalDateTime.now().toLocalTime().toString();
                 doc.insertString(doc.getLength(), "[" + ISOnow + "] ", infostyle);
                 doc.insertString(doc.getLength(), "Evaluating " + mainclass.getName() + linebreak, infostyle);
-                ProgramRunner pr = new ProgramRunner(mainclass, "/usr/bin");
+                ProgramRunner pr = new ProgramRunner(mainclass, java_home + "/bin");
                 doc.insertString(doc.getLength(), "Compiling... ", null);
                 pr.compile();
                 doc.insertString(doc.getLength(), "Done." + linebreak, null);
