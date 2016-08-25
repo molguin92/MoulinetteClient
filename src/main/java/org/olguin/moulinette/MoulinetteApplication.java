@@ -207,6 +207,16 @@ public class MoulinetteApplication extends JFrame {
 
         serverManager = new MoulinetteServerManager();
         this.setVisible(true);
+
+        //welcome message:
+        try {
+            doc.insertString(doc.getLength(),
+                    "Welcome to " + prop.getProperty("name") + " v" + prop.getProperty("version") + "." + linebreak,
+                    infostyle);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+
         this.updateHomeworks();
 
     }
@@ -217,6 +227,13 @@ public class MoulinetteApplication extends JFrame {
         JPanel dpanel = new JPanel(new BorderLayout());
         dpanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
         dpanel.add(new JLabel("Updating homework assignments, please wait..."));
+
+        try {
+            doc.insertString(doc.getLength(), "Getting homework list from server... ", infostyle);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+
         dialog.add(dpanel);
         dialog.pack();
         dialog.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -237,7 +254,8 @@ public class MoulinetteApplication extends JFrame {
 
         try {
             dt.join();
-        } catch (InterruptedException e) {
+            doc.insertString(doc.getLength(), "Done!" + linebreak, infostyle);
+        } catch (InterruptedException | BadLocationException e) {
             e.printStackTrace();
         }
 

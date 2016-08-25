@@ -20,7 +20,6 @@ public class MoulinetteServerManager {
     private List<Homework> homeworks;
 
     public void updateHomeworks() {
-        System.err.println("Updating homeworks...");
         homeworks = new ArrayList<>(10);
         String res = HttpRequest.get(serveruri + "homeworks").body();
         JSONArray hws = new JSONObject(res).getJSONArray("result");
@@ -52,31 +51,27 @@ public class MoulinetteServerManager {
             Homework homework = new Homework(id, name, description, items);
             homeworks.add(homework);
         }
-
-        System.err.println("Done updating!");
     }
 
     public void validateTestOutput(String testid, String output) throws WrongResult {
         HttpRequest res = HttpRequest.post(serveruri + "validate_test", true, "id", testid, "output", output + "\n");
 
-        if(res.notFound() || res.badRequest())
+        if (res.notFound() || res.badRequest())
             throw new HttpRequest.HttpRequestException(new IOException());
 
         JSONObject result = new JSONObject(res.body());
-        if(!result.getBoolean("result_ok"))
+        if (!result.getBoolean("result_ok"))
             throw new WrongResult(result.getString("error"));
     }
 
-    public List<Homework> getHomeworks()
-    {
+    public List<Homework> getHomeworks() {
         return this.homeworks;
     }
 
-    public class WrongResult extends Exception
-    {
+    public class WrongResult extends Exception {
         public String error;
-        public WrongResult(String error)
-        {
+
+        public WrongResult(String error) {
             this.error = error;
         }
     }
