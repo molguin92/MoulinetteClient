@@ -66,6 +66,8 @@ public class ProgramRunner {
             throw new ProgramNotCompiled();
         }
 
+        test_input = localizeLinefeed(test_input);
+
         Process proc = Runtime.getRuntime().exec(this.pathtojava + File.separator + "java "
                 + "-classpath " + this.pathtofolder
                 + " " + this.mainclassname);
@@ -93,7 +95,7 @@ public class ProgramRunner {
         String out = "";
         String line;
         while ((line = stdout.readLine()) != null) {
-            out += line + "\n";
+            out += line + System.getProperty("line.separator");
         }
 
         stderr.close();
@@ -104,7 +106,17 @@ public class ProgramRunner {
 
         stdin_stream.close();
 
-        return out;
+        return standardizeLinefeed(out);
+    }
+
+    private static String standardizeLinefeed(String in) {
+        return in.replaceAll("\\r\\n", "\n").replaceAll("\\r", "\n");
+    }
+
+    private static String localizeLinefeed(String in) {
+        return in.replaceAll("\\n", System.getProperty("line.separator"))
+                .replaceAll("\\n\\r", System.getProperty("line.separator"))
+                .replaceAll("\\r", System.getProperty("line.separator"));
     }
 
 
