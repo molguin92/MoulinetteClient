@@ -45,7 +45,7 @@ public class MoulinetteApplication extends JFrame {
 
 
     private MoulinetteApplication(int width, int height, Properties prop) {
-        super("Moulinette v" + prop.getProperty("version"));
+        super(prop.getProperty("name") + " " + prop.getProperty("version"));
 
         java_home = System.getenv("JAVA_HOME");
 
