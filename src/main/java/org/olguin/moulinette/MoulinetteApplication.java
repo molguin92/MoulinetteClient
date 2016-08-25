@@ -302,6 +302,7 @@ public class MoulinetteApplication extends JFrame {
 
             try {
                 String ISOnow = LocalDateTime.now().toLocalTime().toString();
+                doc.insertString(doc.getLength(), linebreak, null);
                 doc.insertString(doc.getLength(), "[" + ISOnow + "] ", infostyle);
                 doc.insertString(doc.getLength(), "Evaluating " + mainclass.getName() + linebreak, infostyle);
                 ProgramRunner pr = new ProgramRunner(mainclass, java_home + "/bin");
