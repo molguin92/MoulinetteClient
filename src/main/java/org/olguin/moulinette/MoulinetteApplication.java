@@ -48,7 +48,7 @@ public class MoulinetteApplication extends JFrame {
     private MoulinetteApplication(int width, int height, Properties prop) {
         super(prop.getProperty("name") + " " + prop.getProperty("version"));
 
-        java_home = System.getenv("JAVA_HOME");
+        java_home = getJavaHomeEnv();
 
         this.setSize(width, height);
         this.setResizable(false);
@@ -270,14 +270,7 @@ public class MoulinetteApplication extends JFrame {
 
     private void runProgram() {
         if (mainclass == null) {
-            JDialog errordialog = new JDialog(this, "Error", true);
-            JPanel dpanel = new JPanel(new BorderLayout());
-            dpanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
-            errordialog.add(dpanel);
-            dpanel.add(new JLabel("Error: Please select a program to test."));
-            errordialog.pack();
-            errordialog.setLocationRelativeTo(this);
-            errordialog.setVisible(true);
+            showErrorDialog("Please select a program.", "Please select a program to run and test.");
             return;
         }
 
@@ -358,6 +351,27 @@ public class MoulinetteApplication extends JFrame {
             itemdescription.setText(selected.getDescription() + linebreak);
             tests = selected.getTests();
         }
+    }
+
+    private void showErrorDialog(String title, String error) {
+        JDialog errordialog = new JDialog(this, title, true);
+        JPanel dpanel = new JPanel(new BorderLayout());
+        dpanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
+        errordialog.add(dpanel);
+        dpanel.add(new JLabel(error));
+        errordialog.pack();
+        errordialog.setLocationRelativeTo(this);
+        errordialog.setVisible(true);
+    }
+
+    private String getJavaHomeEnv() {
+
+        String jhome = System.getenv("JAVA_HOME");
+        if (jhome == null) {
+            showErrorDialog("JAVA_HOME not set!", "Please set your JAVA_HOME environment variable and restart this application.");
+            System.exit(1);
+        }
+        return jhome;
     }
 
     public static void main(String[] args) throws IOException {
