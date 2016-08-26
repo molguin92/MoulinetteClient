@@ -1,7 +1,7 @@
 package org.olguin.moulinette.homework;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-21.
@@ -11,19 +11,17 @@ public class HomeworkItem {
     private String id;
     private String name;
     private String description;
-    private Map<String, String> tests;
+    private List<HomeworkTest> tests;
 
-    public HomeworkItem(String id, String name, String description)
-    {
+    public HomeworkItem(String id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.tests = new HashMap<>(3);
+        this.tests = new ArrayList<>(3);
     }
 
-    public void addTest(String id, String input)
-    {
-        tests.put(id, input);
+    public void addTest(String id, String description, String input) {
+        tests.add(new HomeworkTest(id, description, input));
     }
 
     public String getId() {
@@ -34,7 +32,7 @@ public class HomeworkItem {
         return description;
     }
 
-    public Map<String, String> getTests() {
+    public List<HomeworkTest> getTests() {
         return tests;
     }
 
@@ -42,5 +40,7 @@ public class HomeworkItem {
         return name;
     }
 
-    public String toString() { return name; }
+    public String toString() {
+        return name;
+    }
 }

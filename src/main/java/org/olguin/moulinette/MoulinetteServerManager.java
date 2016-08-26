@@ -42,7 +42,7 @@ public class MoulinetteServerManager {
                 JSONArray jtests = it.getJSONArray("tests");
                 for (Object o2 : jtests) {
                     JSONObject test = (JSONObject) o2;
-                    item.addTest(test.getString("id"), test.getString("input"));
+                    item.addTest(test.getString("id"), test.getString("description"), test.getString("input"));
                 }
 
                 items.add(item);
