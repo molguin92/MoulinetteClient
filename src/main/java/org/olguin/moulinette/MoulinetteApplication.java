@@ -196,7 +196,7 @@ public class MoulinetteApplication extends JFrame
         auxpanel.add(tpanel);
 
         errorstyle = new SimpleAttributeSet();
-        StyleConstants.setForeground(errorstyle, Color.RED);
+        StyleConstants.setForeground(errorstyle, new Color(187, 19, 0)); // red
         StyleConstants.setBold(errorstyle, true);
 
         correctstyle = new SimpleAttributeSet();

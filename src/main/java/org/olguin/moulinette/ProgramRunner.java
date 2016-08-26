@@ -7,7 +7,8 @@ import java.util.concurrent.TimeUnit;
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-16.
  * Part of org.olguin.moulinette.
  */
-public class ProgramRunner {
+public class ProgramRunner
+{
 
     private String mainclassname;
     private String pathtofolder;
@@ -15,7 +16,8 @@ public class ProgramRunner {
 
     private String pathtojava;
 
-    public ProgramRunner(File mainclass, String java) throws IOException {
+    public ProgramRunner(File mainclass, String java) throws IOException
+    {
         this.mainclassname = mainclass.getName().split(new String(".java"))[0];
         this.pathtofolder = mainclass.getParentFile().getCanonicalPath();
         this.compiled = false;
@@ -26,12 +28,14 @@ public class ProgramRunner {
      * Compiles the program previous to running it. Sets the flag "compiled" to true if compilation was succesful.
      * If not, writes error to stderr.
      */
-    public void compile() throws InterruptedException, IOException, CompileError {
+    public void compile() throws InterruptedException, IOException, CompileError
+    {
         File folder = new File(this.pathtofolder);
-        File[] sources = folder.listFiles(pathname -> {
-            String name = pathname.getName();
-            return name.substring(name.lastIndexOf('.')).equals(".java");
-        });
+        File[] sources = folder.listFiles(pathname ->
+                                          {
+                                              String name = pathname.getName();
+                                              return name.endsWith(".java");
+                                          });
 
         String src = "";
         for (File f : sources)
@@ -41,11 +45,13 @@ public class ProgramRunner {
         BufferedInputStream stderr = new BufferedInputStream(compproc.getErrorStream());
         compproc.waitFor(10, TimeUnit.SECONDS);
 
-        if (compproc.exitValue() != 0) {
+        if (compproc.exitValue() != 0)
+        {
             BufferedReader reader = new BufferedReader(new InputStreamReader(stderr));
             String err = "";
             String line;
-            while ((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null)
+            {
                 err += line + "\n";
             }
 
@@ -61,16 +67,19 @@ public class ProgramRunner {
     }
 
 
-    public String run(String test_input, int timeout, TimeUnit timeUnit) throws ProgramNotCompiled, IOException, InterruptedException, ExecutionError {
-        if (!compiled) {
+    public String run(String test_input, int timeout, TimeUnit timeUnit)
+            throws ProgramNotCompiled, IOException, InterruptedException, ExecutionError
+    {
+        if (!compiled)
+        {
             throw new ProgramNotCompiled();
         }
 
         test_input = localizeLinefeed(test_input);
 
         Process proc = Runtime.getRuntime().exec(this.pathtojava + File.separator + "java "
-                + "-classpath " + this.pathtofolder
-                + " " + this.mainclassname);
+                                                         + "-classpath " + this.pathtofolder
+                                                         + " " + this.mainclassname);
         BufferedInputStream stderr_stream = new BufferedInputStream(proc.getErrorStream());
         BufferedInputStream stdout_stream = new BufferedInputStream(proc.getInputStream());
         BufferedOutputStream stdin_stream = new BufferedOutputStream(proc.getOutputStream());
@@ -85,7 +94,8 @@ public class ProgramRunner {
 
         proc.waitFor(timeout, timeUnit);
 
-        if (proc.exitValue() != 0) {
+        if (proc.exitValue() != 0)
+        {
             String line;
             while ((line = stderr.readLine()) != null)
                 System.err.println(line);
@@ -94,7 +104,8 @@ public class ProgramRunner {
 
         String out = "";
         String line;
-        while ((line = stdout.readLine()) != null) {
+        while ((line = stdout.readLine()) != null)
+        {
             out += line + System.getProperty("line.separator");
         }
 
@@ -109,34 +120,42 @@ public class ProgramRunner {
         return standardizeLinefeed(out);
     }
 
-    private static String standardizeLinefeed(String in) {
+    private static String standardizeLinefeed(String in)
+    {
         return in.replaceAll("\\r\\n", "\n").replaceAll("\\r", "\n");
     }
 
-    private static String localizeLinefeed(String in) {
+    private static String localizeLinefeed(String in)
+    {
         return in.replaceAll("\\n", System.getProperty("line.separator"))
-                .replaceAll("\\n\\r", System.getProperty("line.separator"))
-                .replaceAll("\\r", System.getProperty("line.separator"));
+                 .replaceAll("\\n\\r", System.getProperty("line.separator"))
+                 .replaceAll("\\r", System.getProperty("line.separator"));
     }
 
 
-    public class CompileError extends Exception {
+    public class CompileError extends Exception
+    {
         String stderr;
 
-        CompileError(String stderr) {
+        CompileError(String stderr)
+        {
             super();
             this.stderr = stderr;
         }
     }
 
-    public class ProgramNotCompiled extends Exception {
-        public ProgramNotCompiled() {
+    public class ProgramNotCompiled extends Exception
+    {
+        public ProgramNotCompiled()
+        {
             super();
         }
     }
 
-    public class ExecutionError extends Exception {
-        public ExecutionError() {
+    public class ExecutionError extends Exception
+    {
+        public ExecutionError()
+        {
             super();
         }
     }
