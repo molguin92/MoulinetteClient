@@ -25,7 +25,7 @@ public class ProgramRunner
     }
 
     /**
-     * Compiles the program previous to running it. Sets the flag "compiled" to true if compilation was succesful.
+     * Compiles the program previous to running it. Sets the flag "compiled" to true if compilation was successful.
      * If not, writes error to stderr.
      */
     public void compile() throws InterruptedException, IOException, CompileError
