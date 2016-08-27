@@ -335,7 +335,8 @@ public class MoulinetteApplication extends JFrame
                                       doc.insertString(doc.getLength(), "[" + ISOnow + "] ", infostyle);
                                       doc.insertString(doc.getLength(), "Evaluating " + mainclass.getName() + linebreak,
                                                        infostyle);
-                                      ProgramRunner pr = new ProgramRunner(mainclass, java_home + "/bin");
+                                      ProgramRunner pr =
+                                              new ProgramRunner(mainclass, java_home + File.separator + "bin");
                                       doc.insertString(doc.getLength(), "Compiling... ", null);
                                       pr.compile();
                                       doc.insertString(doc.getLength(), "Done." + linebreak, null);
@@ -466,7 +467,7 @@ public class MoulinetteApplication extends JFrame
 
         InputStream resourceAsStream =
                 MoulinetteApplication.class.getResourceAsStream(
-                        "/version.properties"
+                        File.separator + "version.properties"
                 );
         Properties prop = new Properties();
         prop.load(resourceAsStream);
