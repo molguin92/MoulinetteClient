@@ -31,18 +31,8 @@ public class MoulinetteServerManager
 
         prefs = Preferences.userNodeForPackage(MoulinetteServerManager.class);
 
-        if (System.getenv("MOULINETTE_DEBUG").equals("TRUE"))
-        {
+        if (System.getenv("MOULINETTE_DEBUG") != null && System.getenv("MOULINETTE_DEBUG").equals("TRUE"))
             serveruri = System.getenv("SERVER_URL") + "/api/v1/";
-            try
-            {
-                prefs.clear();
-            }
-            catch (BackingStoreException e)
-            {
-                e.printStackTrace();
-            }
-        }
         else
             serveruri = "https://moulinetteweb.herokuapp.com/api/v1/";
     }
@@ -56,7 +46,6 @@ public class MoulinetteServerManager
         {
             clientid = HttpRequest.get(serveruri + "clients").body();
             prefs.put(CLIENT_ID_PREF, clientid);
-            System.out.println(clientid);
         }
 
         // now, homeworks
@@ -98,7 +87,8 @@ public class MoulinetteServerManager
 
     public void validateTestOutput(String testid, String output) throws WrongResult
     {
-        HttpRequest res = HttpRequest.post(serveruri + "validate_test", true, "id", testid, "output", output + "\n");
+        HttpRequest res = HttpRequest
+                .post(serveruri + "validate_test", true, "id", testid, "output", output + "\n", "client_id", clientid);
 
         if (res.notFound() || res.badRequest())
             throw new HttpRequest.HttpRequestException(new IOException());
@@ -121,5 +111,16 @@ public class MoulinetteServerManager
         {
             this.error = error;
         }
+    }
+
+    public static void main(String[] args) throws BackingStoreException
+    {
+        new MoulinetteServerManager().clearPrefs();
+    }
+
+    private void clearPrefs() throws BackingStoreException
+    {
+        System.out.println("Clearing all preferences.");
+        prefs.clear();
     }
 }
