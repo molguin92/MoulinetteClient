@@ -9,6 +9,8 @@ import org.olguin.moulinette.homework.HomeworkItem;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 /**
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-21.
@@ -17,14 +19,30 @@ import java.util.List;
 public class MoulinetteServerManager
 {
 
+    private static String CLIENT_ID_PREF = "CLIENT_ID";
+
     private String serveruri;
+    private String clientid;
     private List<Homework> homeworks;
+    private final Preferences prefs;
 
     public MoulinetteServerManager()
     {
 
+        prefs = Preferences.userNodeForPackage(MoulinetteServerManager.class);
+
         if (System.getenv("MOULINETTE_DEBUG").equals("TRUE"))
+        {
             serveruri = System.getenv("SERVER_URL") + "/api/v1/";
+            try
+            {
+                prefs.clear();
+            }
+            catch (BackingStoreException e)
+            {
+                e.printStackTrace();
+            }
+        }
         else
             serveruri = "https://moulinetteweb.herokuapp.com/api/v1/";
     }
@@ -32,6 +50,16 @@ public class MoulinetteServerManager
 
     public void updateHomeworks()
     {
+        // first, check client id
+        clientid = prefs.get(CLIENT_ID_PREF, null);
+        if (clientid == null)
+        {
+            clientid = HttpRequest.get(serveruri + "clients").body();
+            prefs.put(CLIENT_ID_PREF, clientid);
+            System.out.println(clientid);
+        }
+
+        // now, homeworks
         homeworks = new ArrayList<>(10);
         String res = HttpRequest.get(serveruri + "homeworks").body();
         JSONArray hws = new JSONObject(res).getJSONArray("result");
