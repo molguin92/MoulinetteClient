@@ -84,19 +84,25 @@ public class MoulinetteServerManager
         }
     }
 
-    public List<TestResult> validateTests(JSONArray tests)
+    public List<TestResult> validateTests(JSONArray tests) throws ServerError
     {
         JSONObject data = new JSONObject();
         data.put("results", tests);
         data.put("client_id", clientid);
 
-        String res =
+        HttpRequest req =
                 HttpRequest.post(serveruri + "validate_tests")
                            .contentType("application/json")
-                           .send(data.toString())
-                           .body();
+                           .send(data.toString());
 
-        JSONArray results = new JSONObject(res).getJSONArray("results");
+        if (req.badRequest() || req.code() == 401)
+        {
+            clientid = null;
+            prefs.remove(CLIENT_ID_PREF);
+            throw new ServerError();
+        }
+
+        JSONArray results = new JSONObject(req.body()).getJSONArray("results");
         List<TestResult> ret = new ArrayList<>(results.length());
         for (Object t : results)
         {
@@ -110,6 +116,18 @@ public class MoulinetteServerManager
     public List<Homework> getHomeworks()
     {
         return this.homeworks;
+    }
+
+
+    public static void main(String[] args) throws BackingStoreException
+    {
+        new MoulinetteServerManager().clearPrefs();
+    }
+
+    private void clearPrefs() throws BackingStoreException
+    {
+        System.out.println("Clearing all preferences.");
+        prefs.clear();
     }
 
     public class TestResult
@@ -126,14 +144,7 @@ public class MoulinetteServerManager
         }
     }
 
-    public static void main(String[] args) throws BackingStoreException
+    public class ServerError extends Exception
     {
-        new MoulinetteServerManager().clearPrefs();
-    }
-
-    private void clearPrefs() throws BackingStoreException
-    {
-        System.out.println("Clearing all preferences.");
-        prefs.clear();
     }
 }

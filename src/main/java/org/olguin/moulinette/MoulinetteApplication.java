@@ -379,9 +379,17 @@ public class MoulinetteApplication extends JFrame
 
                                   }
                                   catch (IOException | InterruptedException | ProgramRunner.ProgramNotCompiled |
-                                          BadLocationException e)
+                                          BadLocationException | MoulinetteServerManager.ServerError e)
                                   {
-                                      e.printStackTrace();
+                                      try
+                                      {
+                                          doc.insertString(doc.getLength(), "Something went wrong. Please refresh the" +
+                                                  " application and try again." + linebreak, errorstyle);
+                                      }
+                                      catch (BadLocationException e1)
+                                      {
+                                          e1.printStackTrace();
+                                      }
                                   }
                                   catch (ProgramRunner.ExecutionError executionError)
                                   {
