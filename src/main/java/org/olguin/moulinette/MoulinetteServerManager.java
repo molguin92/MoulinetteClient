@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import org.olguin.moulinette.homework.Homework;
 import org.olguin.moulinette.homework.HomeworkItem;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -85,17 +84,27 @@ public class MoulinetteServerManager
         }
     }
 
-    public void validateTestOutput(String testid, String output) throws WrongResult
+    public List<TestResult> validateTests(JSONArray tests)
     {
-        HttpRequest res = HttpRequest
-                .post(serveruri + "validate_test", true, "id", testid, "output", output + "\n", "client_id", clientid);
+        JSONObject data = new JSONObject();
+        data.put("results", tests);
+        data.put("client_id", clientid);
 
-        if (res.notFound() || res.badRequest())
-            throw new HttpRequest.HttpRequestException(new IOException());
+        String res =
+                HttpRequest.post(serveruri + "validate_tests")
+                           .contentType("application/json")
+                           .send(data.toString())
+                           .body();
 
-        JSONObject result = new JSONObject(res.body());
-        if (!result.getBoolean("result_ok"))
-            throw new WrongResult(result.getString("error"));
+        JSONArray results = new JSONObject(res).getJSONArray("results");
+        List<TestResult> ret = new ArrayList<>(results.length());
+        for (Object t : results)
+        {
+            JSONObject o = (JSONObject) t;
+            ret.add(new TestResult(o.getString("test_id"), o.getBoolean("result_ok"), o.getString("error")));
+        }
+
+        return ret;
     }
 
     public List<Homework> getHomeworks()
@@ -103,12 +112,16 @@ public class MoulinetteServerManager
         return this.homeworks;
     }
 
-    public class WrongResult extends Exception
+    public class TestResult
     {
+        public String id;
+        public boolean test_ok;
         public String error;
 
-        public WrongResult(String error)
+        public TestResult(String id, boolean test_ok, String error)
         {
+            this.id = id;
+            this.test_ok = test_ok;
             this.error = error;
         }
     }

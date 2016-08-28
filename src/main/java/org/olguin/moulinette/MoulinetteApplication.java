@@ -1,6 +1,7 @@
 package org.olguin.moulinette;
 
-import com.github.kevinsawicki.http.HttpRequest;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.olguin.moulinette.homework.Homework;
 import org.olguin.moulinette.homework.HomeworkItem;
 import org.olguin.moulinette.homework.HomeworkTest;
@@ -15,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +35,7 @@ public class MoulinetteApplication extends JFrame
     private MoulinetteServerManager serverManager;
     private JComboBox hwbox;
     private JComboBox itembox;
-    private java.util.List<HomeworkTest> tests;
+    private Map<String, HomeworkTest> tests;
     private File mainclass;
     private StyledDocument doc;
     private SimpleAttributeSet errorstyle;
@@ -340,37 +343,40 @@ public class MoulinetteApplication extends JFrame
                                       doc.insertString(doc.getLength(), "Compiling... ", null);
                                       pr.compile();
                                       doc.insertString(doc.getLength(), "Done." + linebreak, null);
-                                      doc.insertString(doc.getLength(), "Verifying results..." + linebreak, null);
+                                      doc.insertString(doc.getLength(), "Running tests..." + linebreak, null);
 
-                                      for (HomeworkTest test : tests)
+                                      JSONArray results = new JSONArray();
+
+                                      for (HomeworkTest test : tests.values())
                                       {
-                                          doc.insertString(doc.getLength(),
-                                                           linebreak + "Test ID: " + test.id + linebreak +
-                                                                   "Description: " + test.description + linebreak,
-                                                           null);
-                                          doc.insertString(doc.getLength(), "Result... ", null);
-                                          String result = pr.run(test.input, 3, TimeUnit.SECONDS);
-
-                                          try
-                                          {
-                                              serverManager.validateTestOutput(test.id, result);
-                                              doc.insertString(doc.getLength(), "Correct ✓" + linebreak, correctstyle);
-                                          }
-                                          catch (MoulinetteServerManager.WrongResult wrongResult)
-                                          {
-                                              doc.insertString(doc.getLength(),
-                                                               "Incorrect ✗: " + wrongResult.error + linebreak,
-                                                               errorstyle);
-                                          }
-                                          catch (HttpRequest.HttpRequestException e)
-                                          {
-                                              doc.insertString(doc.getLength(), linebreak +
-                                                      "Error when contacting server. Please retry or refresh the " +
-                                                      "application." +
-                                                      linebreak, errorstyle);
-                                              return;
-                                          }
+                                          JSONObject tobj = new JSONObject();
+                                          String output = pr.run(test.input, 5, TimeUnit.SECONDS);
+                                          tobj.put("id", test.id);
+                                          tobj.put("output", output);
+                                          results.put(tobj);
                                       }
+
+                                      java.util.List<MoulinetteServerManager.TestResult> res =
+                                              serverManager.validateTests(results);
+
+                                      doc.insertString(doc.getLength(), linebreak, null);
+
+                                      for (MoulinetteServerManager.TestResult result : res)
+                                      {
+                                          doc.insertString(doc.getLength(), "Test ID: ", null);
+                                          doc.insertString(doc.getLength(), result.id + linebreak, infostyle);
+                                          doc.insertString(doc.getLength(), "Description: ", null);
+                                          doc.insertString(doc.getLength(),
+                                                           tests.get(result.id).description + linebreak, null);
+                                          doc.insertString(doc.getLength(), "Result: ", null);
+                                          if (result.test_ok)
+                                              doc.insertString(doc.getLength(), "Correct ✓" + linebreak, correctstyle);
+                                          else
+                                              doc.insertString(doc.getLength(), "Incorrect ✗" + linebreak,
+                                                               errorstyle);
+                                          doc.insertString(doc.getLength(), linebreak, null);
+                                      }
+
                                   }
                                   catch (IOException | InterruptedException | ProgramRunner.ProgramNotCompiled |
                                           BadLocationException e)
@@ -433,7 +439,9 @@ public class MoulinetteApplication extends JFrame
         if (selected != null)
         {
             itemdescription.setText(selected.getDescription() + linebreak);
-            tests = selected.getTests();
+            tests = new HashMap<>(selected.getTests().size());
+            for (HomeworkTest t : selected.getTests())
+                tests.put(t.id, t);
         }
     }
 
@@ -467,7 +475,7 @@ public class MoulinetteApplication extends JFrame
 
         InputStream resourceAsStream =
                 MoulinetteApplication.class.getResourceAsStream(
-                        File.separator + "version.properties"
+                        "/version.properties"
                 );
         Properties prop = new Properties();
         prop.load(resourceAsStream);
