@@ -9,7 +9,6 @@ import org.olguin.moulinette.homework.HomeworkItem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 /**
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-21.
@@ -19,16 +18,17 @@ public class MoulinetteServerManager
 {
 
     private static String CLIENT_ID_PREF = "CLIENT_ID";
+    private static String PREFS_FILE = ".moulinette.config";
 
     private String serveruri;
     private String clientid;
     private List<Homework> homeworks;
-    private final Preferences prefs;
+    private final SimpleJSONPreferences prefs;
 
     MoulinetteServerManager()
     {
 
-        prefs = Preferences.userNodeForPackage(MoulinetteServerManager.class);
+        prefs = SimpleJSONPreferences.loadFile(PREFS_FILE);
 
         if (System.getenv("MOULINETTE_DEBUG") != null && System.getenv("MOULINETTE_DEBUG").equals("TRUE"))
             serveruri = System.getenv("SERVER_URL") + "/api/v1/";
