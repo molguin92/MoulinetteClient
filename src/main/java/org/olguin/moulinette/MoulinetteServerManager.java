@@ -25,7 +25,7 @@ public class MoulinetteServerManager
     private List<Homework> homeworks;
     private final Preferences prefs;
 
-    public MoulinetteServerManager()
+    MoulinetteServerManager()
     {
 
         prefs = Preferences.userNodeForPackage(MoulinetteServerManager.class);
@@ -37,7 +37,7 @@ public class MoulinetteServerManager
     }
 
 
-    public void updateHomeworks()
+    void updateHomeworks()
     {
         // first, check client id
         clientid = prefs.get(CLIENT_ID_PREF, null);
@@ -84,7 +84,7 @@ public class MoulinetteServerManager
         }
     }
 
-    public List<TestResult> validateTests(JSONArray tests) throws ServerError
+    List<TestResult> validateTests(JSONArray tests) throws ServerError
     {
         JSONObject data = new JSONObject();
         data.put("results", tests);
@@ -113,7 +113,7 @@ public class MoulinetteServerManager
         return ret;
     }
 
-    public List<Homework> getHomeworks()
+    List<Homework> getHomeworks()
     {
         return this.homeworks;
     }
@@ -130,13 +130,13 @@ public class MoulinetteServerManager
         prefs.clear();
     }
 
-    public class TestResult
+    class TestResult
     {
-        public String id;
-        public boolean test_ok;
-        public String error;
+        String id;
+        boolean test_ok;
+        String error;
 
-        public TestResult(String id, boolean test_ok, String error)
+        TestResult(String id, boolean test_ok, String error)
         {
             this.id = id;
             this.test_ok = test_ok;
@@ -144,7 +144,7 @@ public class MoulinetteServerManager
         }
     }
 
-    public class ServerError extends Exception
+    class ServerError extends Exception
     {
     }
 }

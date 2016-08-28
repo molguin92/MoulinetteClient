@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-15.
  * Part of org.olguin.moulinette.
  */
+@SuppressWarnings("Convert2Diamond")
 public class MoulinetteApplication extends JFrame
 {
 
@@ -33,8 +34,8 @@ public class MoulinetteApplication extends JFrame
     private final JButton pchoose;
     private final JButton prun;
     private MoulinetteServerManager serverManager;
-    private JComboBox hwbox;
-    private JComboBox itembox;
+    private JComboBox<Homework> hwbox;
+    private JComboBox<HomeworkItem> itembox;
     private Map<String, HomeworkTest> tests;
     private File mainclass;
     private StyledDocument doc;
@@ -108,12 +109,12 @@ public class MoulinetteApplication extends JFrame
         prun.addActionListener(e -> this.runProgram());
 
 
-        hwbox = new JComboBox();
+        hwbox = new JComboBox<>();
         hwbox.addActionListener(e -> this.selectHomework());
         JLabel hwboxlabel = new JLabel("Homework: ");
         hwboxlabel.setPreferredSize(new Dimension(110, 10));
 
-        itembox = new JComboBox();
+        itembox = new JComboBox<HomeworkItem>();
         itembox.addActionListener(e -> this.selectHomeworkItem());
         JLabel itemboxlabel = new JLabel("Item: ");
         itemboxlabel.setPreferredSize(new Dimension(110, 10));
@@ -261,8 +262,8 @@ public class MoulinetteApplication extends JFrame
                                    serverManager.updateHomeworks();
                                    java.util.List<Homework> homeworks = serverManager.getHomeworks();
                                    hwbox.removeAllItems();
-                                   for (Homework homework : homeworks)
-                                       if (homework != null) hwbox.addItem(homework);
+                                   homeworks.stream().filter(homework -> homework != null)
+                                            .forEach(homework -> hwbox.addItem(homework));
 
                                    dialog.setVisible(false);
                                });
@@ -434,8 +435,7 @@ public class MoulinetteApplication extends JFrame
         itembox.removeAllItems();
         if (selected != null)
         {
-            for (HomeworkItem item : selected.getItems())
-                if (item != null) itembox.addItem(item);
+            selected.getItems().stream().filter(item -> item != null).forEach(item -> itembox.addItem(item));
             hwdescription.setText(selected.getDescription() + linebreak);
         }
 
