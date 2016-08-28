@@ -127,9 +127,7 @@ public class ProgramRunner
 
     private static String localizeLinefeed(String in)
     {
-        return in.replaceAll("\\n", System.getProperty("line.separator"))
-                 .replaceAll("\\n\\r", System.getProperty("line.separator"))
-                 .replaceAll("\\r", System.getProperty("line.separator"));
+        return in.replaceAll("\\n", System.getProperty("line.separator"));
     }
 
 
