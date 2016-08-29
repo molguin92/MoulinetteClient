@@ -6,8 +6,11 @@ import org.json.JSONObject;
 import org.olguin.moulinette.homework.Homework;
 import org.olguin.moulinette.homework.HomeworkItem;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.prefs.BackingStoreException;
 
 /**
@@ -25,7 +28,7 @@ public class MoulinetteServerManager
     private List<Homework> homeworks;
     private final SimpleJSONPreferences prefs;
 
-    MoulinetteServerManager()
+    MoulinetteServerManager(Properties prop)
     {
 
         prefs = SimpleJSONPreferences.loadFile(PREFS_FILE);
@@ -33,7 +36,7 @@ public class MoulinetteServerManager
         if (System.getenv("MOULINETTE_DEBUG") != null && System.getenv("MOULINETTE_DEBUG").equals("TRUE"))
             serveruri = System.getenv("SERVER_URL") + "/api/v1/";
         else
-            serveruri = "https://moulinetteweb.herokuapp.com/api/v1/";
+            serveruri = prop.getProperty("serveruri");
     }
 
 
@@ -119,9 +122,15 @@ public class MoulinetteServerManager
     }
 
 
-    public static void main(String[] args) throws BackingStoreException
+    public static void main(String[] args) throws BackingStoreException, IOException
     {
-        new MoulinetteServerManager().clearPrefs();
+        InputStream resourceAsStream =
+                MoulinetteApplication.class.getResourceAsStream(
+                        "/version.properties"
+                );
+        Properties prop = new Properties();
+        prop.load(resourceAsStream);
+        new MoulinetteServerManager(prop).clearPrefs();
     }
 
     private void clearPrefs() throws BackingStoreException

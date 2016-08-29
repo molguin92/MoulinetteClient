@@ -215,7 +215,7 @@ public class MoulinetteApplication extends JFrame
         mainPanel.add(auxpanel);
         this.add(mainPanel);
 
-        serverManager = new MoulinetteServerManager();
+        serverManager = new MoulinetteServerManager(prop);
         this.setVisible(true);
 
         //welcome message:
