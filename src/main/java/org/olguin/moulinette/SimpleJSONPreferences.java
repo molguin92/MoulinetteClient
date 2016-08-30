@@ -25,7 +25,7 @@ class SimpleJSONPreferences
      * Creates a new SimpleJSONPreferences object using the specified file uri for persistent storage.
      *
      * @param uri The path to the preferences file.
-     * @return
+     * @return A SimpleJSONPreferences object.
      */
     static SimpleJSONPreferences loadFile(String uri)
     {
@@ -38,6 +38,7 @@ class SimpleJSONPreferences
     /**
      * Loads preferences from file
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void loadFromFile()
     {
         try
