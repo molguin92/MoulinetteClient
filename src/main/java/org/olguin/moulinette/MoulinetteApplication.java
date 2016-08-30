@@ -456,6 +456,9 @@ public class MoulinetteApplication extends JFrame
                                           doc.insertString(doc.getLength(),
                                                            linebreak + "Error when executing " + mainclass.getName() +
                                                                    linebreak, errorstyle);
+                                          doc.insertString(doc.getLength(), linebreak, errorstyle);
+                                          doc.insertString(doc.getLength(), executionError.getErrorStub() + linebreak,
+                                                           errorstyle);
                                       }
                                       catch (BadLocationException e)
                                       {

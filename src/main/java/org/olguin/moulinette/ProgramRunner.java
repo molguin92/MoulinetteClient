@@ -136,10 +136,10 @@ class ProgramRunner
         if (proc.exitValue() != 0)
         {
             String line;
-            // TODO: Remove this and return a shorter error message.
+            String error = "";
             while ((line = stderr.readLine()) != null)
-                System.err.println(line);
-            throw new ExecutionError();
+                error += line + "\n";
+            throw new ExecutionError(error);
         }
 
         String out = "";
@@ -205,9 +205,21 @@ class ProgramRunner
 
     class ExecutionError extends Exception
     {
-        ExecutionError()
+        private String stderr;
+
+        ExecutionError(String stderr)
         {
             super();
+            this.stderr = stderr;
+        }
+
+        String getErrorStub()
+        {
+            String[] split = stderr.split("\\r\\n|\\n|\\r");
+            return split[0] + System.getProperty("line.separator") +
+                    split[1] + System.getProperty("line.separator") +
+                    "..." + System.getProperty("line.separator") +
+                    split[split.length - 1] + System.getProperty("line.separator");
         }
     }
 
