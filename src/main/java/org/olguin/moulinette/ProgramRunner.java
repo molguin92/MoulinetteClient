@@ -217,8 +217,7 @@ class ProgramRunner
         {
             String[] split = stderr.split("\\r\\n|\\n|\\r");
             return split[0] + System.getProperty("line.separator") +
-                    split[1] + System.getProperty("line.separator") +
-                    "..." + System.getProperty("line.separator") +
+                    "\t..." + System.getProperty("line.separator") +
                     split[split.length - 1] + System.getProperty("line.separator");
         }
     }
