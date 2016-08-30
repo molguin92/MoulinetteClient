@@ -12,14 +12,22 @@ import java.nio.file.Files;
 /**
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-28.
  * Part of org.olguin.moulinette.
+ * <p>
+ * Simple class for managing program preferences in a text file containing the preferences in json format.
  */
-public class SimpleJSONPreferences
+class SimpleJSONPreferences
 {
     private File prefsfile;
     private JSONObject jsonprefs;
 
 
-    public static SimpleJSONPreferences loadFile(String uri)
+    /**
+     * Creates a new SimpleJSONPreferences object using the specified file uri for persistent storage.
+     *
+     * @param uri The path to the preferences file.
+     * @return
+     */
+    static SimpleJSONPreferences loadFile(String uri)
     {
         SimpleJSONPreferences prefs = new SimpleJSONPreferences();
         prefs.prefsfile = new File(uri);
@@ -27,6 +35,9 @@ public class SimpleJSONPreferences
         return prefs;
     }
 
+    /**
+     * Loads preferences from file
+     */
     private void loadFromFile()
     {
         try
@@ -46,6 +57,9 @@ public class SimpleJSONPreferences
         }
     }
 
+    /**
+     * Flushes the modified preferences to the file.
+     */
     private void flushToFile()
     {
         try
@@ -65,14 +79,27 @@ public class SimpleJSONPreferences
         }
     }
 
-    public void put(String key, String value)
+    /**
+     * Put a new configuration key into the preferences.
+     *
+     * @param key   Configuration key.
+     * @param value Configuration value.
+     */
+    void put(String key, String value)
     {
         this.jsonprefs.put(key, value);
         this.flushToFile();
         this.loadFromFile();
     }
 
-    public String get(String key, String def)
+    /**
+     * Get the value of a configuration key. If it doesn't exists, returns the value passed as default.
+     *
+     * @param key The configuration key to lookup.
+     * @param def Default value in case key is not found.
+     * @return The value associated with the given key, or def if the key is not found.
+     */
+    String get(String key, String def)
     {
         try
         {
@@ -84,7 +111,12 @@ public class SimpleJSONPreferences
         }
     }
 
-    public void remove(String key)
+    /**
+     * Removes the value associated with the given key. Does nothing if the key is not found.
+     *
+     * @param key The configuration key to clear.
+     */
+    void remove(String key)
     {
         try
         {
@@ -95,7 +127,10 @@ public class SimpleJSONPreferences
         }
     }
 
-    public void clear()
+    /**
+     * Clears the preference storage.
+     */
+    void clear()
     {
         this.jsonprefs = new JSONObject();
         this.flushToFile();
