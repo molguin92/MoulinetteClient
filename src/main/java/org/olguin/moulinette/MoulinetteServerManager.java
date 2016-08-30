@@ -28,6 +28,13 @@ public class MoulinetteServerManager
     private List<Homework> homeworks;
     private final SimpleJSONPreferences prefs;
 
+    /**
+     * Creates a new server manager using the given properties. If the MOULINETTE_DEBUG environment variable is set
+     * to TRUE, the server URL is set to whatever the SERVER_URL environment variable is set to. Otherwise, the
+     * server URL is taken from the properties.
+     *
+     * @param prop Properties object containing the URL of the server.
+     */
     MoulinetteServerManager(Properties prop)
     {
 
@@ -39,7 +46,9 @@ public class MoulinetteServerManager
             serveruri = prop.getProperty("serveruri");
     }
 
-
+    /**
+     * Fetches the list of active homework assignments from the server.
+     */
     void updateHomeworks()
     {
         // first, check client id
@@ -87,6 +96,14 @@ public class MoulinetteServerManager
         }
     }
 
+    /**
+     * Validates a batch of test outputs. The outputs are to be passed in as a JSONArray containing a JSONObject for
+     * each test. Each test needs to contain the fields "id" and "output".
+     *
+     * @param tests The batch of tests to send to the server for verification.
+     * @return A list of results, one for each of the sent tests.
+     * @throws ServerError In case of a non-200 response code from the server.
+     */
     List<TestResult> validateTests(JSONArray tests) throws ServerError
     {
         JSONObject data = new JSONObject();
@@ -94,9 +111,7 @@ public class MoulinetteServerManager
         data.put("client_id", clientid);
 
         HttpRequest req =
-                HttpRequest.post(serveruri + "validate_tests")
-                           .contentType("application/json")
-                           .send(data.toString());
+                HttpRequest.post(serveruri + "validate_tests").contentType("application/json").send(data.toString());
 
         if (req.badRequest() || req.code() == 401)
         {
