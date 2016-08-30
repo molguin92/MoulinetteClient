@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
  * Created by Manuel Olguín (molguin@dcc.uchile.cl) on 2016-08-16.
  * Part of org.olguin.moulinette.
  */
-public class ProgramRunner
+class ProgramRunner
 {
 
     private String mainclassname;
@@ -16,9 +16,9 @@ public class ProgramRunner
 
     private String pathtojava;
 
-    public ProgramRunner(File mainclass, String java) throws IOException
+    ProgramRunner(File mainclass, String java) throws IOException
     {
-        this.mainclassname = mainclass.getName().split(new String(".java"))[0];
+        this.mainclassname = mainclass.getName().split(".java")[0];
         this.pathtofolder = mainclass.getParentFile().getCanonicalPath();
         this.compiled = false;
         this.pathtojava = java;
@@ -28,7 +28,7 @@ public class ProgramRunner
      * Compiles the program previous to running it. Sets the flag "compiled" to true if compilation was successful.
      * If not, writes error to stderr.
      */
-    public void compile() throws InterruptedException, IOException, CompileError
+    void compile() throws InterruptedException, IOException, CompileError
     {
         File folder = new File(this.pathtofolder);
         File[] sources = folder.listFiles(pathname ->
@@ -36,6 +36,9 @@ public class ProgramRunner
                                               String name = pathname.getName();
                                               return name.endsWith(".java");
                                           });
+
+        if (sources == null)
+            throw new CompileError("No sources to compile.\n");
 
         String src = "";
         for (File f : sources)
@@ -67,7 +70,7 @@ public class ProgramRunner
     }
 
 
-    public String run(String test_input, int timeout, TimeUnit timeUnit)
+    String run(String test_input, int timeout, TimeUnit timeUnit)
             throws ProgramNotCompiled, IOException, InterruptedException, ExecutionError
     {
         if (!compiled)
@@ -131,7 +134,7 @@ public class ProgramRunner
     }
 
 
-    public class CompileError extends Exception
+    class CompileError extends Exception
     {
         String stderr;
 
@@ -142,17 +145,17 @@ public class ProgramRunner
         }
     }
 
-    public class ProgramNotCompiled extends Exception
+    class ProgramNotCompiled extends Exception
     {
-        public ProgramNotCompiled()
+        ProgramNotCompiled()
         {
             super();
         }
     }
 
-    public class ExecutionError extends Exception
+    class ExecutionError extends Exception
     {
-        public ExecutionError()
+        ExecutionError()
         {
             super();
         }
