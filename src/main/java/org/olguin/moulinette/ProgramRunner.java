@@ -11,15 +11,14 @@ class ProgramRunner
 {
 
     private String mainclassname;
-    private String pathtofolder;
     private boolean compiled;
-
+    private File parentfolder;
     private String pathtojava;
 
     ProgramRunner(File mainclass, String java) throws IOException
     {
         this.mainclassname = mainclass.getName().split(".java")[0];
-        this.pathtofolder = mainclass.getParentFile().getCanonicalPath();
+        this.parentfolder = mainclass.getParentFile();
         this.compiled = false;
         this.pathtojava = java;
     }
@@ -34,24 +33,24 @@ class ProgramRunner
      */
     void compile() throws InterruptedException, IOException, CompileError
     {
-        File folder = new File(this.pathtofolder);
-
         // get all the source files in the folder
-        File[] sources = folder.listFiles(pathname ->
-                                          {
-                                              String name = pathname.getName();
-                                              return name.endsWith(".java");
-                                          });
+        File[] sources = this.parentfolder.listFiles(pathname ->
+                                                     {
+                                                         String name = pathname.getName();
+                                                         return name.endsWith(".java");
+                                                     });
 
         if (sources == null)
             throw new CompileError("No sources to compile.\n");
 
-        String src = "";
-        for (File f : sources)
-            src += this.pathtofolder + File.separator + f.getName() + " ";
+
+        String[] cmdarray = new String[sources.length + 1];
+        cmdarray[0] = this.pathtojava + File.separator + "javac";
+        for (int i = 0; i < sources.length; i++)
+            cmdarray[i + 1] = sources[i].getName();
 
         // run compilation process
-        Process compproc = Runtime.getRuntime().exec(this.pathtojava + File.separator + "javac " + src);
+        Process compproc = Runtime.getRuntime().exec(cmdarray, null, this.parentfolder);
         BufferedInputStream stderr = new BufferedInputStream(compproc.getErrorStream());
         compproc.waitFor(10, TimeUnit.SECONDS);
 
@@ -114,9 +113,9 @@ class ProgramRunner
         test_input = localizeLinefeed(test_input);
 
         // run the program
-        Process proc = Runtime.getRuntime().exec(this.pathtojava + File.separator + "java "
-                                                         + "-classpath " + this.pathtofolder
-                                                         + " " + this.mainclassname);
+        Process proc = Runtime.getRuntime()
+                              .exec(new String[]{this.pathtojava + File.separator + "java", this.mainclassname}, null,
+                                    this.parentfolder);
 
         // set up communication streams
         BufferedInputStream stderr_stream = new BufferedInputStream(proc.getErrorStream());
