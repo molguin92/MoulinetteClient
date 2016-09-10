@@ -553,6 +553,11 @@ public class MoulinetteApplication extends JFrame
                             "Please set your JAVA_HOME environment variable and restart this application.");
             System.exit(1);
         }
+
+        // fix problems with people having their JAVA_HOME ending in a slash.
+        if (jhome.endsWith(File.separator))
+            jhome = jhome.substring(0, jhome.length() - 1);
+
         return jhome;
     }
 
