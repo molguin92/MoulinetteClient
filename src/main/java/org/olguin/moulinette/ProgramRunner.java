@@ -114,7 +114,8 @@ class ProgramRunner
 
         // run the program
         Process proc = Runtime.getRuntime()
-                              .exec(new String[]{this.pathtojava + File.separator + "java", this.mainclassname}, null,
+                              .exec(new String[]{this.pathtojava + File.separator + "java", this.mainclassname,
+                                                 "-classpath", this.parentfolder.getCanonicalPath()}, null,
                                     this.parentfolder);
 
         // set up communication streams
