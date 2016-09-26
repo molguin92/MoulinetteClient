@@ -131,12 +131,16 @@ class ProgramRunner
         stdin.flush();
         stdin.close(); // <-- EOF
 
-        proc.waitFor(timeout, timeUnit);
+        String error = "";
 
-        if (proc.exitValue() != 0)
+        if (!proc.waitFor(timeout, timeUnit))
+        {
+            error = "Timeout Exceeded!";
+            throw new ExecutionError(error);
+        }
+        else if (proc.exitValue() != 0)
         {
             String line;
-            String error = "";
             while ((line = stderr.readLine()) != null)
                 error += line + "\n";
             throw new ExecutionError(error);

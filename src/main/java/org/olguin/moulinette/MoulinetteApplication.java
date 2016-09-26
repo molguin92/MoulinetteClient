@@ -405,28 +405,30 @@ public class MoulinetteApplication extends JFrame
                                       JSONArray results = new JSONArray();
                                       for (HomeworkTest test : tests.values())
                                       {
+                                          doc.insertString(doc.getLength(), "Running Test with ID: ", null);
+                                          doc.insertString(doc.getLength(), test.id + linebreak, infostyle);
+                                          doc.insertString(doc.getLength(), "Description: ", null);
+                                          doc.insertString(doc.getLength(), test.description + linebreak, null);
+                                          doc.insertString(doc.getLength(), "------ * ------" + linebreak, infostyle);
+
                                           JSONObject tobj = new JSONObject();
-                                          String output = pr.run(test.input, 5, TimeUnit.SECONDS);
+                                          String output = pr.run(test.input, 600, TimeUnit.SECONDS);
                                           tobj.put("id", test.id);
                                           tobj.put("output", output);
                                           results.put(tobj);
                                       }
 
                                       // verify
+                                      doc.insertString(doc.getLength(), "Verifying results..." + linebreak, null);
                                       java.util.List<MoulinetteServerManager.TestResult> res =
                                               serverManager.validateTests(results);
 
-                                      doc.insertString(doc.getLength(), linebreak, null);
 
                                       // finally, show the verification results on the textPane
                                       for (MoulinetteServerManager.TestResult result : res)
                                       {
-                                          doc.insertString(doc.getLength(), "Test ID: ", null);
-                                          doc.insertString(doc.getLength(), result.id + linebreak, infostyle);
-                                          doc.insertString(doc.getLength(), "Description: ", null);
-                                          doc.insertString(doc.getLength(),
-                                                           tests.get(result.id).description + linebreak, null);
-                                          doc.insertString(doc.getLength(), "Result: ", null);
+                                          doc.insertString(doc.getLength(), result.id, infostyle);
+                                          doc.insertString(doc.getLength(), " - Result: ", null);
                                           if (result.test_ok)
                                               doc.insertString(doc.getLength(), "Correct ✓" + linebreak, correctstyle);
                                           else
