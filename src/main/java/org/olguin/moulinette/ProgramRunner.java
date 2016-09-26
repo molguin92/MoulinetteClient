@@ -135,7 +135,7 @@ class ProgramRunner
 
         if (!proc.waitFor(timeout, timeUnit))
         {
-            error = "Timeout Exceeded!";
+            error = String.format("Timeout exceeded (%d seconds)!", timeout);
             throw new ExecutionError(error);
         }
         else if (proc.exitValue() != 0)
