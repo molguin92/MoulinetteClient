@@ -85,7 +85,8 @@ public class MoulinetteServerManager
                 for (Object o2 : jtests)
                 {
                     JSONObject test = (JSONObject) o2;
-                    item.addTest(test.getString("id"), test.getString("description"), test.getString("input"));
+                    item.addTest(test.getString("id"), test.getString("description"), test.getString("input"),
+                                 test.getInt("timeout"));
                 }
 
                 items.add(item);

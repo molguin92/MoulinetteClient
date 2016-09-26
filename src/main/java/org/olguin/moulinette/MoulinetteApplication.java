@@ -412,7 +412,7 @@ public class MoulinetteApplication extends JFrame
                                           doc.insertString(doc.getLength(), "------ * ------" + linebreak, infostyle);
 
                                           JSONObject tobj = new JSONObject();
-                                          String output = pr.run(test.input, 600, TimeUnit.SECONDS);
+                                          String output = pr.run(test.input, test.timeout, TimeUnit.SECONDS);
                                           tobj.put("id", test.id);
                                           tobj.put("output", output);
                                           results.put(tobj);
