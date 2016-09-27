@@ -127,46 +127,83 @@ class ProgramRunner
         BufferedReader stdout = new BufferedReader(new InputStreamReader(stdout_stream));
         BufferedWriter stdin = new BufferedWriter(new OutputStreamWriter(stdin_stream));
 
-        StringBuilder outbuilder = new StringBuilder();
+        StringBuilder out_builder = new StringBuilder();
+        StringBuilder err_builder = new StringBuilder();
 
         stdin.write(test_input);
 
-        Thread t = new Thread(() ->
-                              {
-                                  String line;
-                                  try
-                                  {
-                                      while ((line = stdout.readLine()) != null)
-                                      {
-                                          outbuilder.append(line).append("\n");
-                                      }
-                                  }
-                                  catch (IOException e)
-                                  {
-                                      e.printStackTrace();
-                                      System.exit(-1);
-                                  }
-                              });
+        Thread t_stdout = new Thread(() ->
+                                     {
+                                         String line;
+                                         try
+                                         {
+                                             while ((line = stdout.readLine()) != null)
+                                             {
+                                                 out_builder.append(line).append("\n");
+                                             }
+                                         }
+                                         catch (IOException e)
+                                         {
+                                             e.printStackTrace();
+                                             System.exit(-1);
+                                         }
+                                     });
 
-        t.start();
+        Thread t_stderr = new Thread(() ->
+                                     {
+                                         String line;
+                                         try
+                                         {
+                                             while ((line = stderr.readLine()) != null)
+                                             {
+                                                 err_builder.append(line).append(System.getProperty("line.separator"));
+                                             }
+                                         }
+                                         catch (IOException e)
+                                         {
+                                             e.printStackTrace();
+                                             System.exit(-1);
+                                         }
+                                     });
+
+        t_stdout.start();
+        t_stderr.start();
         stdin.close(); // <-- EOF
-
-        String error = "";
 
         if (!proc.waitFor(timeout, timeUnit))
         {
-            error = String.format("Timeout exceeded (%d seconds)!", timeout);
+            proc.destroyForcibly();
+
+            t_stdout.join();
+            t_stderr.join();
+
+            stderr.close();
+            stderr_stream.close();
+
+            stdout.close();
+            stdout_stream.close();
+
+            stdin_stream.close();
+
+            String error = String.format("Timeout exceeded (%d seconds)!", timeout);
             throw new ExecutionError(error);
         }
         else if (proc.exitValue() != 0)
         {
-            String line;
-            while ((line = stderr.readLine()) != null)
-                error += line + System.getProperty("line.separator");
-            throw new ExecutionError(error);
+            t_stdout.join();
+            t_stderr.join();
+
+            stderr.close();
+            stderr_stream.close();
+
+            stdout.close();
+            stdout_stream.close();
+
+            stdin_stream.close();
+            throw new ExecutionError(err_builder.toString());
         }
 
-        t.join();
+        t_stdout.join();
 
         stderr.close();
         stderr_stream.close();
@@ -177,7 +214,7 @@ class ProgramRunner
         stdin_stream.close();
 
         // CRLF -> LF
-        return standardizeLinefeed(outbuilder.toString());
+        return standardizeLinefeed(out_builder.toString());
     }
 
     /**
