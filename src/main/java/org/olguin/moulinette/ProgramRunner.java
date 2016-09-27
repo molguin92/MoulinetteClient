@@ -127,8 +127,28 @@ class ProgramRunner
         BufferedReader stdout = new BufferedReader(new InputStreamReader(stdout_stream));
         BufferedWriter stdin = new BufferedWriter(new OutputStreamWriter(stdin_stream));
 
-        stdin.write(test_input, 0, test_input.length());
-        stdin.flush();
+        StringBuilder outbuilder = new StringBuilder();
+
+        stdin.write(test_input);
+
+        Thread t = new Thread(() ->
+                              {
+                                  String line;
+                                  try
+                                  {
+                                      while ((line = stdout.readLine()) != null)
+                                      {
+                                          outbuilder.append(line).append("\n");
+                                      }
+                                  }
+                                  catch (IOException e)
+                                  {
+                                      e.printStackTrace();
+                                      System.exit(-1);
+                                  }
+                              });
+
+        t.start();
         stdin.close(); // <-- EOF
 
         String error = "";
@@ -142,16 +162,11 @@ class ProgramRunner
         {
             String line;
             while ((line = stderr.readLine()) != null)
-                error += line + "\n";
+                error += line + System.getProperty("line.separator");
             throw new ExecutionError(error);
         }
 
-        String out = "";
-        String line;
-        while ((line = stdout.readLine()) != null)
-        {
-            out += line + System.getProperty("line.separator");
-        }
+        t.join();
 
         stderr.close();
         stderr_stream.close();
@@ -162,7 +177,7 @@ class ProgramRunner
         stdin_stream.close();
 
         // CRLF -> LF
-        return standardizeLinefeed(out);
+        return standardizeLinefeed(outbuilder.toString());
     }
 
     /**

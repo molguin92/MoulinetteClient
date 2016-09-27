@@ -399,6 +399,7 @@ public class MoulinetteApplication extends JFrame
 
                                       doc.insertString(doc.getLength(), "Done." + linebreak, null);
                                       doc.insertString(doc.getLength(), "Running tests..." + linebreak, null);
+                                      doc.insertString(doc.getLength(), "------ * ------" + linebreak, infostyle);
 
                                       // results are stored in a JSON array which is then passed to the server
                                       // manager for verification on the remote server
@@ -434,7 +435,6 @@ public class MoulinetteApplication extends JFrame
                                           else
                                               doc.insertString(doc.getLength(), "Incorrect ✗" + linebreak,
                                                                errorstyle);
-                                          doc.insertString(doc.getLength(), linebreak, null);
                                       }
 
                                   }
