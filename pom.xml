@@ -6,7 +6,7 @@
 
     <groupId>org.olguin.moulinette</groupId>
     <artifactId>moulinette</artifactId>
-    <version>1.0.0beta4</version>
+    <version>1.0.0beta5</version>
 
     <dependencies>
         <dependency>

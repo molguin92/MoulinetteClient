@@ -130,50 +130,19 @@ class ProgramRunner
         StringBuilder out_builder = new StringBuilder();
         StringBuilder err_builder = new StringBuilder();
 
-        stdin.write(test_input);
+        Thread t_stdin = buildProducerThread(stdin, test_input);
+        Thread t_stdout = buildConsumerThread(stdout, out_builder);
+        Thread t_stderr = buildConsumerThread(stderr, err_builder);
 
-        Thread t_stdout = new Thread(() ->
-                                     {
-                                         String line;
-                                         try
-                                         {
-                                             while ((line = stdout.readLine()) != null)
-                                             {
-                                                 out_builder.append(line).append("\n");
-                                             }
-                                         }
-                                         catch (IOException e)
-                                         {
-                                             e.printStackTrace();
-                                             System.exit(-1);
-                                         }
-                                     });
-
-        Thread t_stderr = new Thread(() ->
-                                     {
-                                         String line;
-                                         try
-                                         {
-                                             while ((line = stderr.readLine()) != null)
-                                             {
-                                                 err_builder.append(line).append(System.getProperty("line.separator"));
-                                             }
-                                         }
-                                         catch (IOException e)
-                                         {
-                                             e.printStackTrace();
-                                             System.exit(-1);
-                                         }
-                                     });
-
+        t_stdin.start();
         t_stdout.start();
         t_stderr.start();
-        stdin.close(); // <-- EOF
 
         if (!proc.waitFor(timeout, timeUnit))
         {
             proc.destroyForcibly();
 
+            t_stdin.join();
             t_stdout.join();
             t_stderr.join();
 
@@ -190,6 +159,7 @@ class ProgramRunner
         }
         else if (proc.exitValue() != 0)
         {
+            t_stdin.join();
             t_stdout.join();
             t_stderr.join();
 
@@ -203,6 +173,8 @@ class ProgramRunner
             throw new ExecutionError(err_builder.toString());
         }
 
+        t_stdin.join();
+        t_stderr.join();
         t_stdout.join();
 
         stderr.close();
@@ -215,6 +187,43 @@ class ProgramRunner
 
         // CRLF -> LF
         return standardizeLinefeed(out_builder.toString());
+    }
+
+    private static Thread buildConsumerThread(BufferedReader reader, StringBuilder builder)
+    {
+        return new Thread(() ->
+                          {
+                              String line;
+                              try
+                              {
+                                  while ((line = reader.readLine()) != null)
+                                  {
+                                      builder.append(line.trim()).append(System.getProperty("line.separator"));
+                                  }
+                              }
+                              catch (IOException e)
+                              {
+                                  e.printStackTrace();
+                                  System.exit(-1);
+                              }
+                          });
+    }
+
+    private static Thread buildProducerThread(BufferedWriter writer, String input)
+    {
+        return new Thread(() ->
+                          {
+                              try
+                              {
+                                  writer.write(input);
+                                  writer.close();
+                              }
+                              catch (IOException e)
+                              {
+                                  e.printStackTrace();
+                                  System.exit(-1);
+                              }
+                          });
     }
 
     /**
