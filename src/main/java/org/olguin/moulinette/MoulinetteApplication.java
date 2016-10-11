@@ -30,6 +30,8 @@ public class MoulinetteApplication extends JFrame
 {
 
     private static String linebreak = System.getProperty("line.separator");
+    private static String PREFS_FILE = ".moulinette.config";
+    private final SimpleJSONPreferences prefs;
     private final JButton refresh;
     private final JButton pchoose;
     private final JButton prun;
@@ -57,10 +59,12 @@ public class MoulinetteApplication extends JFrame
      * @param width  Width of the window.
      * @param height Height of the window.
      * @param prop   Properties object for accessing static properties of the application (version, name, etc).
+     * @param prefs
      */
-    private MoulinetteApplication(int width, int height, Properties prop)
+    private MoulinetteApplication(int width, int height, Properties prop, SimpleJSONPreferences prefs)
     {
         super(prop.getProperty("name") + " " + prop.getProperty("version"));
+        this.prefs = prefs;
         java_home = getJavaHomeEnv();
 
         // Initialize basic window
@@ -110,18 +114,24 @@ public class MoulinetteApplication extends JFrame
         refresh.addActionListener(e -> this.updateHomeworks());
         pchoose.addActionListener(e ->
                                   {
-                                      mainclass = selectMainClass();
+                                      String fpath = this.prefs.get("RECENT_PATH", null);
+                                      mainclass = selectMainClass(fpath);
                                       if (mainclass != null)
                                           try
                                           {
                                               pfield.setText(mainclass.getCanonicalPath());
+                                              this.prefs
+                                                      .put("RECENT_PATH", mainclass.getParentFile().getCanonicalPath());
                                           }
                                           catch (IOException e1)
                                           {
                                               e1.printStackTrace();
                                           }
                                       else
+                                      {
                                           pfield.setText("");
+                                          this.prefs.remove("RECENT_PATH");
+                                      }
                                   });
         prun.addActionListener(e -> this.runProgram());
 
@@ -244,7 +254,7 @@ public class MoulinetteApplication extends JFrame
         this.add(mainPanel);
 
         // initialize the ServerManager
-        serverManager = new MoulinetteServerManager(prop);
+        serverManager = new MoulinetteServerManager(prop, this.prefs);
         this.setVisible(true);
 
         //welcome message:
@@ -322,11 +332,18 @@ public class MoulinetteApplication extends JFrame
     /**
      * Brings up the standard java FileChooser dialog to select the main class of the program to be evaluated.
      *
+     * @param filepath
      * @return The chose file, null if cancelled.
      */
-    private File selectMainClass()
+    private File selectMainClass(String filepath)
     {
-        JFileChooser fc = new JFileChooser();
+        File path = null;
+        if (filepath != null)
+        {
+            path = new File(filepath);
+        }
+
+        JFileChooser fc = new JFileChooser(path);
         fc.setFileFilter(new FileFilter()
         {
             @Override
@@ -573,6 +590,6 @@ public class MoulinetteApplication extends JFrame
         Properties prop = new Properties();
         prop.load(resourceAsStream);
 
-        new MoulinetteApplication(800, 600, prop);
+        new MoulinetteApplication(800, 600, prop, SimpleJSONPreferences.loadFile(MoulinetteApplication.PREFS_FILE));
     }
 }

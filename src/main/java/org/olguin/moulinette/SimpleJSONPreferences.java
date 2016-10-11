@@ -20,6 +20,10 @@ class SimpleJSONPreferences
     private File prefsfile;
     private JSONObject jsonprefs;
 
+    private SimpleJSONPreferences()
+    {
+    }
+
 
     /**
      * Creates a new SimpleJSONPreferences object using the specified file uri for persistent storage.

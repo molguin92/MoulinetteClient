@@ -6,8 +6,6 @@ import org.json.JSONObject;
 import org.olguin.moulinette.homework.Homework;
 import org.olguin.moulinette.homework.HomeworkItem;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -21,7 +19,6 @@ public class MoulinetteServerManager
 {
 
     private static String CLIENT_ID_PREF = "CLIENT_ID";
-    private static String PREFS_FILE = ".moulinette.config";
 
     private String serveruri;
     private String clientid;
@@ -33,12 +30,13 @@ public class MoulinetteServerManager
      * to TRUE, the server URL is set to whatever the SERVER_URL environment variable is set to. Otherwise, the
      * server URL is taken from the properties.
      *
-     * @param prop Properties object containing the URL of the server.
+     * @param prop  Properties object containing the URL of the server.
+     * @param prefs
      */
-    MoulinetteServerManager(Properties prop)
+    MoulinetteServerManager(Properties prop, SimpleJSONPreferences prefs)
     {
 
-        prefs = SimpleJSONPreferences.loadFile(PREFS_FILE);
+        this.prefs = prefs;
 
         if (System.getenv("MOULINETTE_DEBUG") != null && System.getenv("MOULINETTE_DEBUG").equals("TRUE"))
             serveruri = System.getenv("SERVER_URL") + "/api/v1/";
@@ -135,18 +133,6 @@ public class MoulinetteServerManager
     List<Homework> getHomeworks()
     {
         return this.homeworks;
-    }
-
-
-    public static void main(String[] args) throws BackingStoreException, IOException
-    {
-        InputStream resourceAsStream =
-                MoulinetteApplication.class.getResourceAsStream(
-                        "/version.properties"
-                );
-        Properties prop = new Properties();
-        prop.load(resourceAsStream);
-        new MoulinetteServerManager(prop).clearPrefs();
     }
 
     private void clearPrefs() throws BackingStoreException
