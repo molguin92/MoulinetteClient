@@ -203,8 +203,8 @@ class ProgramRunner
                               }
                               catch (IOException e)
                               {
-                                  e.printStackTrace();
-                                  System.exit(-1);
+                                  System.err.println("Program output stream closed unexpectedly.");
+                                  System.err.println("Continuing anyway.");
                               }
                           });
     }
@@ -220,8 +220,10 @@ class ProgramRunner
                               }
                               catch (IOException e)
                               {
-                                  e.printStackTrace();
-                                  System.exit(-1);
+                                  System.err.println("Program input stream closed unexpectedly.");
+                                  System.err.println("Continuing anyway.");
+                                  /*e.printStackTrace();
+                                  System.exit(-1);*/
                               }
                           });
     }
