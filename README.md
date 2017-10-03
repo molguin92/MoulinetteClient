@@ -1,7 +1,10 @@
 # MoulinetteClient
 
 Client for the Moulinette online judge for programming assignments.
-Copyright © Manuel Osvaldo Olguín (<molguin@dcc.uchile.cl>, <molguin@kth.se>) 2016 - Present
+
+Copyright © Manuel Osvaldo Olguín (<molguin@dcc.uchile.cl>, <molguin@kth.se>) 
+2016 - Present
+
 This code is distributed under a BSD-3-Clause License, see LICENSE for details.
 
 ## Minimum required JDK Version
