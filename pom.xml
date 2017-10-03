@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.olguin.moulinette</groupId>
-    <artifactId>moulinette</artifactId>
-    <version>1.0.0beta6</version>
+    <artifactId>MoulinetteClient</artifactId>
+    <version>1.0.0beta7</version>
 
     <dependencies>
         <dependency>

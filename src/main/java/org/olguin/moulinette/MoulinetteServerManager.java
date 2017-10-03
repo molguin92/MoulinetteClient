@@ -53,13 +53,13 @@ public class MoulinetteServerManager
         clientid = prefs.get(CLIENT_ID_PREF, null);
         if (clientid == null)
         {
-            clientid = HttpRequest.get(serveruri + "clients").body();
+            clientid = HttpRequest.get(serveruri + "clients").followRedirects(true).body();
             prefs.put(CLIENT_ID_PREF, clientid);
         }
 
         // now, homeworks
         homeworks = new ArrayList<>(10);
-        String res = HttpRequest.get(serveruri + "homeworks").body();
+        String res = HttpRequest.get(serveruri + "homeworks").followRedirects(true).body();
         JSONArray hws = new JSONObject(res).getJSONArray("result");
         for (Object o : hws)
         {
@@ -110,7 +110,7 @@ public class MoulinetteServerManager
         data.put("client_id", clientid);
 
         HttpRequest req =
-                HttpRequest.post(serveruri + "validate_tests").contentType("application/json").send(data.toString());
+                HttpRequest.post(serveruri + "validate_tests").followRedirects(true).contentType("application/json").send(data.toString());
 
         if (req.badRequest() || req.code() == 401)
         {
