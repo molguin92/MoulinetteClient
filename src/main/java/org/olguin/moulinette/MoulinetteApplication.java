@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -304,27 +305,45 @@ public class MoulinetteApplication extends JFrame {
 
         // start a separate thread to do the update, otherwise it locks up the whole
         // window indefinitely.
-        Thread dt = new Thread(() ->
-        {
-            dialog.setLocationRelativeTo(this);
-            serverManager.updateHomeworks();
-            java.util.List<Homework> homeworks = serverManager.getHomeworks();
-            hwbox.removeAllItems();
-            homeworks.stream().filter(homework -> homework != null)
-                    .forEach(homework -> hwbox.addItem(homework));
+        MoulinetteApplication app = this;
+        SwingWorker<List<Homework>, Void> worker = new SwingWorker<List<Homework>, Void>() {
+            @Override
+            protected List<Homework> doInBackground() throws Exception {
+                publish();
+                serverManager.updateHomeworks();
+                return serverManager.getHomeworks();
+            }
 
-            dialog.setVisible(false);
-        });
-        dt.start();
+            @Override
+            protected void process(List<Void> chunks) {
+                dialog.setLocationRelativeTo(app);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<Homework> homeworks = get();
+                    hwbox.removeAllItems();
+                    homeworks.stream().filter(homework -> homework != null)
+                            .forEach(homework -> hwbox.addItem(homework));
+
+                    dialog.setVisible(false);
+
+                    try {
+                        doc.insertString(doc.getLength(), "Done!" + linebreak, infostyle);
+                    } catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }
+
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        };
+
+        worker.execute();
         dialog.setVisible(true);
-
-        try {
-            dt.join();
-            doc.insertString(doc.getLength(), "Done!" + linebreak, infostyle);
-        } catch (InterruptedException | BadLocationException e) {
-            e.printStackTrace();
-        }
-
     }
 
     /**
