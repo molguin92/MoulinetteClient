@@ -1,5 +1,6 @@
 package org.olguin.moulinette;
 
+import org.javatuples.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.olguin.moulinette.homework.Homework;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -26,8 +28,7 @@ import java.util.concurrent.TimeUnit;
  * Part of org.olguin.moulinette.
  */
 @SuppressWarnings("Convert2Diamond")
-public class MoulinetteApplication extends JFrame
-{
+public class MoulinetteApplication extends JFrame {
 
     private static String linebreak = System.getProperty("line.separator");
     private static String PREFS_FILE = ".moulinette.config";
@@ -61,8 +62,7 @@ public class MoulinetteApplication extends JFrame
      * @param prop   Properties object for accessing static properties of the application (version, name, etc).
      * @param prefs
      */
-    private MoulinetteApplication(int width, int height, Properties prop, SimpleJSONPreferences prefs)
-    {
+    private MoulinetteApplication(int width, int height, Properties prop, SimpleJSONPreferences prefs) {
         super(prop.getProperty("name") + " " + prop.getProperty("version"));
         this.prefs = prefs;
         java_home = getJavaHomeEnv();
@@ -113,26 +113,22 @@ public class MoulinetteApplication extends JFrame
         //actionlisteners for the buttons
         refresh.addActionListener(e -> this.updateHomeworks());
         pchoose.addActionListener(e ->
-                                  {
-                                      String fpath = this.prefs.get("RECENT_PATH", null);
-                                      mainclass = selectMainClass(fpath);
-                                      if (mainclass != null)
-                                          try
-                                          {
-                                              pfield.setText(mainclass.getCanonicalPath());
-                                              this.prefs
-                                                      .put("RECENT_PATH", mainclass.getParentFile().getCanonicalPath());
-                                          }
-                                          catch (IOException e1)
-                                          {
-                                              e1.printStackTrace();
-                                          }
-                                      else
-                                      {
-                                          pfield.setText("");
-                                          this.prefs.remove("RECENT_PATH");
-                                      }
-                                  });
+        {
+            String fpath = this.prefs.get("RECENT_PATH", null);
+            mainclass = selectMainClass(fpath);
+            if (mainclass != null)
+                try {
+                    pfield.setText(mainclass.getCanonicalPath());
+                    this.prefs
+                            .put("RECENT_PATH", mainclass.getParentFile().getCanonicalPath());
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            else {
+                pfield.setText("");
+                this.prefs.remove("RECENT_PATH");
+            }
+        });
         prun.addActionListener(e -> this.runProgram());
 
 
@@ -258,15 +254,12 @@ public class MoulinetteApplication extends JFrame
         this.setVisible(true);
 
         //welcome message:
-        try
-        {
+        try {
             doc.insertString(doc.getLength(),
-                             "Welcome to " + prop.getProperty("name") + " v" + prop.getProperty("version") + "." +
-                                     linebreak,
-                             infostyle);
-        }
-        catch (BadLocationException e)
-        {
+                    "Welcome to " + prop.getProperty("name") + " v" + prop.getProperty("version") + "." +
+                            linebreak,
+                    infostyle);
+        } catch (BadLocationException e) {
             e.printStackTrace();
         }
 
@@ -275,11 +268,22 @@ public class MoulinetteApplication extends JFrame
 
     }
 
+    public static void main(String[] args) throws IOException {
+
+        InputStream resourceAsStream =
+                MoulinetteApplication.class.getResourceAsStream(
+                        "/version.properties"
+                );
+        Properties prop = new Properties();
+        prop.load(resourceAsStream);
+
+        new MoulinetteApplication(800, 600, prop, SimpleJSONPreferences.loadFile(MoulinetteApplication.PREFS_FILE));
+    }
+
     /**
      * Shows a dialog and fires an asynchronous request to the server to update the homework collection.
      */
-    private void updateHomeworks()
-    {
+    private void updateHomeworks() {
         // while we update, show a nice, uncloseable dialog.
         JDialog dialog = new JDialog(this, "Updating...", true);
         dialog.setLayout(new BorderLayout());
@@ -287,12 +291,9 @@ public class MoulinetteApplication extends JFrame
         dpanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
         dpanel.add(new JLabel("Updating homework assignments, please wait..."));
 
-        try
-        {
+        try {
             doc.insertString(doc.getLength(), "Getting homework list from server... ", infostyle);
-        }
-        catch (BadLocationException e)
-        {
+        } catch (BadLocationException e) {
             e.printStackTrace();
         }
 
@@ -304,26 +305,23 @@ public class MoulinetteApplication extends JFrame
         // start a separate thread to do the update, otherwise it locks up the whole
         // window indefinitely.
         Thread dt = new Thread(() ->
-                               {
-                                   dialog.setLocationRelativeTo(this);
-                                   serverManager.updateHomeworks();
-                                   java.util.List<Homework> homeworks = serverManager.getHomeworks();
-                                   hwbox.removeAllItems();
-                                   homeworks.stream().filter(homework -> homework != null)
-                                            .forEach(homework -> hwbox.addItem(homework));
+        {
+            dialog.setLocationRelativeTo(this);
+            serverManager.updateHomeworks();
+            java.util.List<Homework> homeworks = serverManager.getHomeworks();
+            hwbox.removeAllItems();
+            homeworks.stream().filter(homework -> homework != null)
+                    .forEach(homework -> hwbox.addItem(homework));
 
-                                   dialog.setVisible(false);
-                               });
+            dialog.setVisible(false);
+        });
         dt.start();
         dialog.setVisible(true);
 
-        try
-        {
+        try {
             dt.join();
             doc.insertString(doc.getLength(), "Done!" + linebreak, infostyle);
-        }
-        catch (InterruptedException | BadLocationException e)
-        {
+        } catch (InterruptedException | BadLocationException e) {
             e.printStackTrace();
         }
 
@@ -333,42 +331,33 @@ public class MoulinetteApplication extends JFrame
      * Brings up the standard java FileChooser dialog to select the main class of the program to be evaluated.
      *
      * @param filepath
-     * @return The chose file, null if cancelled.
+     * @return The chosen file, null if cancelled.
      */
-    private File selectMainClass(String filepath)
-    {
+    private File selectMainClass(String filepath) {
         File path = null;
-        if (filepath != null)
-        {
+        if (filepath != null) {
             path = new File(filepath);
         }
 
         JFileChooser fc = new JFileChooser(path);
-        fc.setFileFilter(new FileFilter()
-        {
+        fc.setFileFilter(new FileFilter() {
             @Override
-            public boolean accept(File f)
-            {
-                if (f.isDirectory())
-                {
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
                     return true;
-                }
-                else
-                {
+                } else {
                     String filename = f.getName().toLowerCase();
                     return filename.endsWith(".java");
                 }
             }
 
             @Override
-            public String getDescription()
-            {
+            public String getDescription() {
                 return "Java source files (.java)";
             }
         });
 
-        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
-        {
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             return fc.getSelectedFile();
         }
         return null;
@@ -378,10 +367,8 @@ public class MoulinetteApplication extends JFrame
      * Runs all the associated tests for a selected homework item on the selected student program, and shows the
      * results on the textpane.
      */
-    private void runProgram()
-    {
-        if (mainclass == null)
-        {
+    private void runProgram() {
+        if (mainclass == null) {
             showErrorDialog("Please select a program.", "Please select a program to run and test.");
             return;
         }
@@ -394,130 +381,177 @@ public class MoulinetteApplication extends JFrame
         itembox.setEnabled(false);
 
         // verification is done in a separate thread to avoid hangups
-        Thread t = new Thread(() ->
-                              {
+        SwingWorker<Boolean, Pair<String, SimpleAttributeSet>> worker = new SwingWorker<Boolean, Pair<String, SimpleAttributeSet>>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+                try {
+                    // some info before tests...
+                    String ISOnow = LocalDateTime.now().toLocalTime().toString();
 
-                                  try
-                                  {
-                                      // some info before tests...
-                                      String ISOnow = LocalDateTime.now().toLocalTime().toString();
-                                      doc.insertString(doc.getLength(), linebreak, null);
-                                      doc.insertString(doc.getLength(), "[" + ISOnow + "] ", infostyle);
-                                      doc.insertString(doc.getLength(), "Evaluating " + mainclass.getName() + linebreak,
-                                                       infostyle);
+                    // all messages are published
+                    publish(Pair.with(linebreak, null));
+                    publish(Pair.with("[" + ISOnow + "] ", infostyle));
+                    publish(Pair.with("Evaluating " + mainclass.getName() + linebreak,
+                            infostyle));
 
-                                      // initialize the program runner object.
-                                      ProgramRunner pr =
-                                              new ProgramRunner(mainclass, java_home + File.separator + "bin");
+                    //doc.insertString(doc.getLength(), linebreak, null);
+                    //doc.insertString(doc.getLength(), "[" + ISOnow + "] ", infostyle);
+                    //doc.insertString(doc.getLength(), "Evaluating " + mainclass.getName() + linebreak,
+                    //infostyle);
 
-                                      // compile
-                                      doc.insertString(doc.getLength(), "Compiling... ", null);
-                                      pr.compile();
+                    // initialize the program runner object.
+                    ProgramRunner pr =
+                            new ProgramRunner(mainclass, java_home + File.separator + "bin");
 
-                                      doc.insertString(doc.getLength(), "Done." + linebreak, null);
-                                      doc.insertString(doc.getLength(), "Running tests..." + linebreak, null);
-                                      doc.insertString(doc.getLength(), "------ * ------" + linebreak, infostyle);
+                    // compile
+                    //doc.insertString(doc.getLength(), "Compiling... ", null);
+                    pr.compile();
 
-                                      // results are stored in a JSON array which is then passed to the server
-                                      // manager for verification on the remote server
-                                      JSONArray results = new JSONArray();
-                                      for (HomeworkTest test : tests.values())
-                                      {
-                                          doc.insertString(doc.getLength(), "Running Test with ID: ", null);
-                                          doc.insertString(doc.getLength(), test.id + linebreak, infostyle);
-                                          doc.insertString(doc.getLength(), "Description: ", null);
-                                          doc.insertString(doc.getLength(), test.description + linebreak, null);
-                                          doc.insertString(doc.getLength(), "------ * ------" + linebreak, infostyle);
+                    publish(Pair.with("Done." + linebreak, null));
+                    publish(Pair.with("Running tests..." + linebreak, null));
+                    publish(Pair.with("------ * ------" + linebreak, infostyle));
 
-                                          JSONObject tobj = new JSONObject();
-                                          String output = pr.run(test.input, test.timeout, TimeUnit.SECONDS);
-                                          tobj.put("id", test.id);
-                                          tobj.put("output", output);
-                                          results.put(tobj);
-                                      }
+                    /*
+                    doc.insertString(doc.getLength(), "Done." + linebreak, null);
+                    doc.insertString(doc.getLength(), "Running tests..." + linebreak, null);
+                    doc.insertString(doc.getLength(), "------ * ------" + linebreak, infostyle);
+                    */
 
-                                      // verify
-                                      doc.insertString(doc.getLength(), "Verifying results..." + linebreak, null);
-                                      java.util.List<MoulinetteServerManager.TestResult> res =
-                                              serverManager.validateTests(results);
+                    // results are stored in a JSON array which is then passed to the server
+                    // manager for verification on the remote server
+                    JSONArray results = new JSONArray();
+                    for (HomeworkTest test : tests.values()) {
+
+                        publish(Pair.with("Running Test with ID: ", null));
+                        publish(Pair.with(test.id + linebreak, infostyle));
+                        publish(Pair.with("Description: ", null));
+                        publish(Pair.with(test.description + linebreak, null));
+                        publish(Pair.with("------ * ------" + linebreak, infostyle));
+
+                        //doc.insertString(doc.getLength(), "Running Test with ID: ", null);
+                        //doc.insertString(doc.getLength(), test.id + linebreak, infostyle);
+                        //doc.insertString(doc.getLength(), "Description: ", null);
+                        //doc.insertString(doc.getLength(), test.description + linebreak, null);
+                        //doc.insertString(doc.getLength(), "------ * ------" + linebreak, infostyle);
+
+                        JSONObject tobj = new JSONObject();
+                        String output = pr.run(test.input, test.timeout, TimeUnit.SECONDS);
+                        tobj.put("id", test.id);
+                        tobj.put("output", output);
+                        results.put(tobj);
+                    }
+
+                    // verify
+                    publish(Pair.with("Verifying results..." + linebreak, null));
+                    //doc.insertString(doc.getLength(), "Verifying results..." + linebreak, null);
+                    java.util.List<MoulinetteServerManager.TestResult> res =
+                            serverManager.validateTests(results);
 
 
-                                      // finally, show the verification results on the textPane
-                                      for (MoulinetteServerManager.TestResult result : res)
-                                      {
-                                          doc.insertString(doc.getLength(), result.id, infostyle);
-                                          doc.insertString(doc.getLength(), " - Result: ", null);
-                                          if (result.test_ok)
-                                              doc.insertString(doc.getLength(), "Correct ✓" + linebreak, correctstyle);
-                                          else
-                                              doc.insertString(doc.getLength(), "Incorrect ✗" + linebreak,
-                                                               errorstyle);
-                                      }
+                    // finally, show the verification results on the textPane
+                    for (MoulinetteServerManager.TestResult result : res) {
+                        publish(Pair.with(result.id, infostyle));
+                        publish(Pair.with(" - Result: ", null));
 
-                                  }
-                                  catch (IOException | InterruptedException | ProgramRunner.ProgramNotCompiled |
-                                          BadLocationException | MoulinetteServerManager.ServerError e)
-                                  {
-                                      try
-                                      {
-                                          doc.insertString(doc.getLength(), "Something went wrong. Please refresh the" +
-                                                  " application and try again." + linebreak, errorstyle);
-                                      }
-                                      catch (BadLocationException e1)
-                                      {
-                                          e1.printStackTrace();
-                                      }
-                                  }
-                                  catch (ProgramRunner.ExecutionError executionError)
-                                  {
-                                      try
-                                      {
-                                          doc.insertString(doc.getLength(),
-                                                           linebreak + "Error when executing " + mainclass.getName() +
-                                                                   linebreak, errorstyle);
-                                          doc.insertString(doc.getLength(), linebreak, errorstyle);
-                                          doc.insertString(doc.getLength(), executionError.getErrorStub() + linebreak,
-                                                           errorstyle);
-                                      }
-                                      catch (BadLocationException e)
-                                      {
-                                          e.printStackTrace();
-                                      }
-                                  }
-                                  catch (ProgramRunner.CompileError compileError)
-                                  {
-                                      try
-                                      {
-                                          doc.insertString(doc.getLength(), linebreak + compileError.stderr + linebreak,
-                                                           errorstyle);
-                                      }
-                                      catch (BadLocationException e)
-                                      {
-                                          e.printStackTrace();
-                                      }
-                                  }
+                        //doc.insertString(doc.getLength(), result.id, infostyle);
+                        //doc.insertString(doc.getLength(), " - Result: ", null);
+                        if (result.test_ok)
+                            publish(Pair.with("Correct ✓" + linebreak, correctstyle));
+                            //doc.insertString(doc.getLength(), "Correct ✓" + linebreak, correctstyle);
+                        else
+                            publish(Pair.with("Incorrect ✗" + linebreak,
+                                    errorstyle));
+                        //doc.insertString(doc.getLength(), "Incorrect ✗" + linebreak,
+                        //errorstyle);
+                    }
 
-                                  // reenable the window
-                                  refresh.setEnabled(true);
-                                  pchoose.setEnabled(true);
-                                  prun.setEnabled(true);
-                                  hwbox.setEnabled(true);
-                                  itembox.setEnabled(true);
+                } catch (IOException | InterruptedException | ProgramRunner.ProgramNotCompiled |
+                        MoulinetteServerManager.ServerError e) {
 
-                              });
+                    publish(Pair.with("Something went wrong. Please refresh the" +
+                            " application and try again." + linebreak, errorstyle));
 
-        t.start();
+                    return false;
+                } catch (ProgramRunner.ExecutionError executionError) {
+
+
+                    publish(Pair.with(linebreak + "Error when executing " + mainclass.getName() +
+                            linebreak, errorstyle));
+                    publish(Pair.with(linebreak, errorstyle));
+                    publish(Pair.with(executionError.getErrorStub() + linebreak,
+                            errorstyle));
+
+                        /*
+                        doc.insertString(doc.getLength(),
+                                linebreak + "Error when executing " + mainclass.getName() +
+                                        linebreak, errorstyle);
+                        doc.insertString(doc.getLength(), linebreak, errorstyle);
+                        doc.insertString(doc.getLength(), executionError.getErrorStub() + linebreak,
+                                errorstyle);
+                        */
+
+                    return false;
+                } catch (ProgramRunner.CompileError compileError) {
+
+                    publish(Pair.with(linebreak + compileError.stderr + linebreak, errorstyle));
+                    //doc.insertString(doc.getLength(), linebreak + compileError.stderr + linebreak,
+                    //        errorstyle);
+
+                    return false;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+
+                return true;
+            }
+
+            @Override
+            protected void done() {
+
+                boolean status;
+                try {
+                    // Retrieve the return value of doInBackground.
+                    status = get();
+                    // reenable the window
+                    refresh.setEnabled(true);
+                    pchoose.setEnabled(true);
+                    prun.setEnabled(true);
+                    hwbox.setEnabled(true);
+                    itembox.setEnabled(true);
+                } catch (Exception e) {
+                    try {
+                        doc.insertString(doc.getLength(), "Something went wrong in the ProgramRunner thread. Please refresh the application and try again." + linebreak, errorstyle);
+                    } catch (BadLocationException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+
+            }
+
+            @Override
+            protected void process(List<Pair<String, SimpleAttributeSet>> chunks) {
+                // process messages to print
+                for (Pair<String, SimpleAttributeSet> msg : chunks) {
+                    try {
+                        doc.insertString(doc.getLength(), msg.getValue0(), msg.getValue1());
+                    } catch (BadLocationException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        };
+
+        worker.execute();
     }
 
     /**
      * Updates the selected homework from the combobox.
      */
-    private void selectHomework()
-    {
+    private void selectHomework() {
         Homework selected = (Homework) hwbox.getSelectedItem();
         itembox.removeAllItems();
-        if (selected != null)
-        {
+        if (selected != null) {
             selected.getItems().stream().filter(item -> item != null).forEach(item -> itembox.addItem(item));
             hwdescription.setText(selected.getDescription() + linebreak);
         }
@@ -527,11 +561,9 @@ public class MoulinetteApplication extends JFrame
     /**
      * Updates the selected item from the combobox.
      */
-    private void selectHomeworkItem()
-    {
+    private void selectHomeworkItem() {
         HomeworkItem selected = (HomeworkItem) itembox.getSelectedItem();
-        if (selected != null)
-        {
+        if (selected != null) {
             itemdescription.setText(selected.getDescription() + linebreak);
             tests = new HashMap<>(selected.getTests().size());
             for (HomeworkTest t : selected.getTests())
@@ -545,8 +577,7 @@ public class MoulinetteApplication extends JFrame
      * @param title Title of the dialog window.
      * @param error The error text to show.
      */
-    private void showErrorDialog(String title, String error)
-    {
+    private void showErrorDialog(String title, String error) {
         JDialog errordialog = new JDialog(this, title, true);
         JPanel dpanel = new JPanel(new BorderLayout());
         dpanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
@@ -562,14 +593,12 @@ public class MoulinetteApplication extends JFrame
      *
      * @return A string containing the JAVA_HOME variable value.
      */
-    private String getJavaHomeEnv()
-    {
+    private String getJavaHomeEnv() {
 
         String jhome = System.getenv("JAVA_HOME");
-        if (jhome == null)
-        {
+        if (jhome == null) {
             showErrorDialog("JAVA_HOME not set!",
-                            "Please set your JAVA_HOME environment variable and restart this application.");
+                    "Please set your JAVA_HOME environment variable and restart this application.");
             System.exit(1);
         }
 
@@ -578,18 +607,5 @@ public class MoulinetteApplication extends JFrame
             jhome = jhome.substring(0, jhome.length() - 1);
 
         return jhome;
-    }
-
-    public static void main(String[] args) throws IOException
-    {
-
-        InputStream resourceAsStream =
-                MoulinetteApplication.class.getResourceAsStream(
-                        "/version.properties"
-                );
-        Properties prop = new Properties();
-        prop.load(resourceAsStream);
-
-        new MoulinetteApplication(800, 600, prop, SimpleJSONPreferences.loadFile(MoulinetteApplication.PREFS_FILE));
     }
 }
